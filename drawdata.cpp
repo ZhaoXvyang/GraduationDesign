@@ -58,12 +58,18 @@ DrawData::DrawData(QWidget *parentWidget)
     axisY2->setLabelFormat("%.1f");
     axisY2->setRange(50, 100); // 设置湿度的显示范围
 
-    // 将每个系列与对应的 Y 轴绑定
-    m_chart->setAxisX(axisX, tempSeries);
-    m_chart->setAxisY(axisY1, tempSeries);
+    // 添加 X 轴和 Y 轴到图表
+    m_chart->addAxis(axisX, Qt::AlignBottom);  // 添加 X 轴并设置对齐方式
+    m_chart->addAxis(axisY1, Qt::AlignLeft);   // 添加第一个 Y 轴并设置对齐方式
+    m_chart->addAxis(axisY2, Qt::AlignRight);  // 添加第二个 Y 轴并设置对齐方式
 
-    m_chart->setAxisX(axisX, humiditySeries);
-    m_chart->setAxisY(axisY2, humiditySeries);
+    // 将系列和对应的轴绑定
+    tempSeries->attachAxis(axisX);
+    tempSeries->attachAxis(axisY1);
+
+    humiditySeries->attachAxis(axisX);
+    humiditySeries->attachAxis(axisY2);
+
 
     // 创建 QChartView 显示图表
     m_charView = new QChartView(m_chart);

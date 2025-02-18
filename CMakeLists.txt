@@ -4,6 +4,13 @@ cmake_minimum_required(VERSION 3.16)
 # 设置项目名称和版本号
 project(GraduationDesign VERSION 0.1 LANGUAGES CXX)
 
+#WS2_32
+if(MSVC)
+    link_libraries(ws2_32)
+else()
+    message("set your network lib")
+endif()
+
 # 开启自动处理 .ui 文件 (将其转换为 C++ 代码)
 set(CMAKE_AUTOUIC ON)
 # 开启自动处理 .moc 文件 (自动生成元对象代码)
@@ -16,9 +23,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 查找 Qt 组件：Widgets 和 Charts
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Charts)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Charts Mqtt)
 # 确保找到正确版本的 Qt
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Charts)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Charts Mqtt)
 
 # 定义项目的源文件列表，包括 .cpp 和 .ui 文件
 set(PROJECT_SOURCES
@@ -35,6 +42,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_SOURCES}     # 添加项目源文件
         drawdata.h
         drawdata.cpp
+        mqtt.h mqtt.cpp
+        data.h data.cpp
 
 
     )
@@ -51,8 +60,27 @@ else()
     endif()
 endif()
 
+# MQTT库
+if(MSVC)
+    message("Using MSVC compiler")
+    #target_include_directories(GraduationDesign PRIVATE D:/codeLib/paho.mqtt.c/build/install/include)
+    #target_link_directories(GraduationDesign PRIVATE D:/codeLib/paho.mqtt.c/build/install/lib)
+    #target_link_libraries(GraduationDesign PRIVATE paho-mqtt3a-static paho-mqtt3c-static)
+    #cpp
+    #target_include_directories(GraduationDesign PRIVATE D:/codeLib/paho.mqtt.cpp-1.5.1/include)
+    #target_link_directories(GraduationDesign PRIVATE D:/codeLib/paho.mqtt.cpp-1.5.1/build/install/lib)
+    #target_link_libraries(GraduationDesign PRIVATE paho-mqttpp3-static)
+else()
+    message("Not using MSVC compiler")
+endif()
+
+
 # 将 Qt 的必要组件链接到目标：Widgets 和 Charts
-target_link_libraries(GraduationDesign PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Charts)
+target_link_libraries(GraduationDesign PRIVATE
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Charts
+    Qt${QT_VERSION_MAJOR}::Mqtt
+)
 
 # 设置 macOS 或 iOS 平台的打包标识符
 if(${QT_VERSION} VERSION_LESS 6.1.0)

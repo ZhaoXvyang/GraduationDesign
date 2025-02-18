@@ -204,21 +204,42 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_bottom">
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="pushButton_subscribe">
        <property name="text">
-        <string>连接断开</string>
+        <string>订阅</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_2">
+      <widget class="QPushButton" name="pushButton_publish">
+       <property name="text">
+        <string>发布</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_connect">
+       <property name="text">
+        <string>连接服务器</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_disconnect">
+       <property name="text">
+        <string>断开服务器</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_setValue">
        <property name="text">
         <string>设置阈值</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_3">
+      <widget class="QPushButton" name="pushButton_update">
        <property name="text">
         <string>刷新界面</string>
        </property>

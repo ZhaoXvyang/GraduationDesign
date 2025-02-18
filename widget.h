@@ -5,6 +5,7 @@
 #include <QVector>
 #include <QLabel>
 #include <QTimer>
+#include "mqtt.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -21,8 +22,17 @@ public:
     ~Widget();
 
     void getLabelPositions();
+
 public:
     QVector<QLabel*> m_labels;
+    MQTTClient* client;
+
+private slots:
+    void on_pushButton_connect_clicked();
+
+    void on_pushButton_subscribe_clicked();
+
+    void on_pushButton_publish_clicked();
 
 private:
     Ui::Widget *ui;
