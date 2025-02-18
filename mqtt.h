@@ -27,18 +27,20 @@ public:
 
     void MyMQTTSubscribe(QString);
     void MyMQTTSendMessage(const QString, const QString);
+    void connectHost();
     void subscribe();
     void publish();
+    void disconnected();
+    bool isConnected();
 
 signals:
 
 public slots:
-    void brokerConnected();
     void slot_connected();
     void slot_recvMsg(const QByteArray& message,const QMqttTopicName& topic);
 
 private:
-
+    std::atomic<bool> m_is_connected;
 };
 
 

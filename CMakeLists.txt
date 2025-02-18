@@ -44,6 +44,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         drawdata.cpp
         mqtt.h mqtt.cpp
         data.h data.cpp
+        MyTools.h
 
 
     )

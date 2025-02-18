@@ -22,6 +22,7 @@ public:
     ~Widget();
 
     void getLabelPositions();
+    void setConnectionStatus(const QString &status);
 
 public:
     QVector<QLabel*> m_labels;
@@ -33,6 +34,8 @@ private slots:
     void on_pushButton_subscribe_clicked();
 
     void on_pushButton_publish_clicked();
+
+    void on_pushButton_disconnect_clicked();
 
 private:
     Ui::Widget *ui;

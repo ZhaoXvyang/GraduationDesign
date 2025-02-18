@@ -43,9 +43,9 @@ DrawData::DrawData(QWidget *parentWidget)
 
     // 创建 X 轴
     QValueAxis *axisX = new QValueAxis();
-    axisX->setTitleText("时间 (小时)");  // 设置X轴标题
+    axisX->setTitleText("s");  // 设置X轴标题
     axisX->setLabelFormat("%d");  // 设置X轴标签格式
-    axisX->setRange(0, 7);  // 设置X轴范围（0到7小时）
+    axisX->setRange(0, 100);  // 设置X轴范围
 
     // 创建 Y 轴（分别对应温度和湿度）
     QValueAxis *axisY1 = new QValueAxis();

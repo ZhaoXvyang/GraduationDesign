@@ -2,9 +2,10 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QByteArray>
+#include "data.h"
 
 MQTTClient::MQTTClient(QObject *parent)
-    :QObject(parent)
+    :QObject(parent),m_is_connected(false)
 {
     m_client = new QMqttClient(this);
     m_client->setHostname(SERVER_ADDRESS);
@@ -17,34 +18,66 @@ MQTTClient::MQTTClient(QObject *parent)
     connect(m_client,&QMqttClient::connected,this,MQTTClient::slot_connected);
     connect(m_client,&QMqttClient::disconnected,[this](){
         qDebug()<<"连接断开";
+        m_is_connected.store(false);
     });
+}
+
+void MQTTClient::connectHost()
+{
+    if(isConnected()) return;
+    m_client->connectToHost();
+
 }
 
 void MQTTClient::subscribe()
 {
+    if(!isConnected()){qDebug()<<"未连接Mqtt服务器";return;}
     m_client->subscribe(TOPIC_EGT);
+    qDebug()<<"订阅成功";
 }
 
 void MQTTClient::publish()
 {
+    if(!isConnected()){qDebug()<<"未连接Mqtt服务器";return;}
+
     QByteArray ba;
-    QString txt = "{\"method\":\"thing.service.property.set\",\"id\":\"1473019453\",\"params\":{\"temp\":31,\"humi\":22,\"led_connected\":0},\"version\":\"1.0.0\"}";
+    data::Data data;
+    QString txt = data.toJsonString();
+    qDebug()<<txt;
+
     ba.append(txt.toUtf8());
     m_client->publish(TOPIC_POST, ba);
+    qDebug()<<"发布成功";
 }
 
-void MQTTClient::brokerConnected()
+void MQTTClient::disconnected()
 {
+    if (isConnected()) {
+        m_client->disconnectFromHost();  // 断开连接
+    } else {
+        qDebug() << "客户端已经处于断开状态";
+    }
+}
 
+bool MQTTClient::isConnected()
+{
+    return m_is_connected.load();
 }
 
 void MQTTClient::slot_connected()
 {
-    qDebug()<<"连接成功!";
+    if (isConnected()) return;
     connect(m_client,&QMqttClient::messageReceived,this,&MQTTClient::slot_recvMsg);
+    m_is_connected.store(true);
+    qDebug()<<"连接成功!";
 }
 
 void MQTTClient::slot_recvMsg(const QByteArray& message,const QMqttTopicName& topic)
 {
-    qDebug()<<"收到服务器推送消息:"<<topic.name()+QString(message);
+    if(!isConnected()){qDebug()<<"未连接Mqtt服务器";return;}
+    qDebug()<<"收到服务器推送消息:"<<topic.name();
+    QString* msg = new QString(message);
+    qDebug()<<"message:"+*msg;
+    data::Data* d1 = new data::Data(*msg,this);
+    d1->printData();
 }

@@ -31,7 +31,7 @@
         </font>
        </property>
        <property name="text">
-        <string>当前系统</string>
+        <string>当前系统：XXXX_DEV</string>
        </property>
       </widget>
      </item>
@@ -44,7 +44,7 @@
         </font>
        </property>
        <property name="text">
-        <string>传输速率</string>
+        <string>传输速率：0/0kbs</string>
        </property>
       </widget>
      </item>
@@ -73,7 +73,7 @@
         <enum>QFrame::Shadow::Plain</enum>
        </property>
        <property name="text">
-        <string>连接状态</string>
+        <string>连接状态：未连接</string>
        </property>
       </widget>
      </item>
