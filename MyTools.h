@@ -3,6 +3,7 @@
 #include <QLabel>
 #include <QTimer>
 #include <QDateTime>
+#include <QSysInfo>
 
 class LabelUtils {
 public:
@@ -19,5 +20,19 @@ public:
 
         timer->start(1000); // 每秒更新一次
     }
+    static void setLabelDeviceName(QLabel* label) {
+        // 获取操作系统类型、版本和 CPU 架构
+        QString osType = QSysInfo::productType();   // 操作系统类型，例如 "windows"
+        QString osVersion = QSysInfo::productVersion(); // 操作系统版本，例如 "11"
+        QString osArch = QSysInfo::currentCpuArchitecture(); // CPU 架构，例如 "x86_64"
+
+        // 设置 QLabel 的文本
+        QString deviceInfo = QString("%1 %2_%3")
+                                 .arg(osType)
+                                 .arg(osVersion)
+                                 .arg(osArch);
+        label->setText(deviceInfo);
+    }
 };
+
 #endif // MYTOOLS_H

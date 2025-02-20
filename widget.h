@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QTimer>
 #include "mqtt.h"
+#include "drawdata.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -39,5 +40,7 @@ private slots:
 
 private:
     Ui::Widget *ui;
+
+    DrawData* drawData;
 };
 #endif // WIDGET_H

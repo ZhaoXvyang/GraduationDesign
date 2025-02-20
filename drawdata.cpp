@@ -1,82 +1,143 @@
-#include "drawdata.h"
+// DrawData.cpp
 
-#include <QSplineSeries>
-#include <QChart>
-#include <QValueAxis>
-#include <QChartView>
+#include "drawdata.h"
+#include <QDebug>
+#include <QTimer>
+#include <QPair>
+#include <qdatetime.h>
+#include <QDateTimeAxis>
 
 DrawData::DrawData(QWidget *parentWidget)
-    : m_parentWidget(parentWidget)
+    : QObject(parentWidget->parent()), m_parentWidget(parentWidget), m_running(false),
+    m_lastTemp(25.0), m_lastHumidity(60.0) // 初始化默认值
 {
-    // 创建图表实例
+    initChart();
+}
+
+void DrawData::initChart()
+{
     m_chart = new QChart();
-    m_chart->setTitle("环境数据变化");  // 设置图表标题
+    m_chart->setTitle("环境数据动态变化");
 
-    // 创建温度和湿度数据系列
-    QSplineSeries *tempSeries = new QSplineSeries();
-    QSplineSeries *humiditySeries = new QSplineSeries();
+    m_tempSeries = new QSplineSeries();
+    m_humiditySeries = new QSplineSeries();
+    m_tempSeries->setName("温度");
+    m_humiditySeries->setName("湿度");
 
-    tempSeries->setName("温度");
-    // 设置温度系列的数据
-    tempSeries->append(0, 20);  // 时间点0，温度20°C
-    tempSeries->append(1, 22);  // 时间点1，温度22°C
-    tempSeries->append(2, 25);  // 时间点2，温度25°C
-    tempSeries->append(3, 30);  // 时间点3，温度30°C
-    tempSeries->append(4, 26);  // 时间点4，温度26°C
-    tempSeries->append(5, 25);  // 时间点5，温度25°C
-    tempSeries->append(6, 20);  // 时间点6，温度20°C
-    tempSeries->append(7, 29);  // 时间点7，温度29°C
+    m_chart->addSeries(m_tempSeries);
+    m_chart->addSeries(m_humiditySeries);
 
-    humiditySeries->setName("湿度");
-    humiditySeries->append(0, 60);  // 时间点0，湿度60%
-    humiditySeries->append(1, 65);  // 时间点1，湿度65%
-    humiditySeries->append(2, 70);  // 时间点2，湿度70%
-    humiditySeries->append(3, 75);  // 时间点3，湿度75%
-    humiditySeries->append(4, 80);  // 时间点4，湿度80%
-    humiditySeries->append(5, 85);  // 时间点5，湿度85%
-    humiditySeries->append(6, 90);  // 时间点6，湿度90%
-    humiditySeries->append(7, 95);  // 时间点7，湿度95%
+    m_axisX = new QDateTimeAxis();  // 使用 QDateTimeAxis
+    m_axisX->setTitleText("时间 (秒)");
+    m_axisX->setFormat("mm:ss");  // 设置时间格式
+    m_axisX->setRange(QDateTime::currentDateTime(), QDateTime::currentDateTime().addSecs(30));  // 初始显示最近30秒
+    m_axisX->setTickCount(16);
 
-    // 将系列添加到图表
-    m_chart->addSeries(tempSeries);
-    m_chart->addSeries(humiditySeries);
+    m_axisY1 = new QValueAxis();
+    m_axisY1->setTitleText("温度 (°C)");
+    m_axisY1->setRange(15, 50);
 
-    // 创建 X 轴
-    QValueAxis *axisX = new QValueAxis();
-    axisX->setTitleText("s");  // 设置X轴标题
-    axisX->setLabelFormat("%d");  // 设置X轴标签格式
-    axisX->setRange(0, 100);  // 设置X轴范围
+    m_axisY2 = new QValueAxis();
+    m_axisY2->setTitleText("湿度 (%)");
+    m_axisY2->setRange(30, 100);
 
-    // 创建 Y 轴（分别对应温度和湿度）
-    QValueAxis *axisY1 = new QValueAxis();
-    axisY1->setTitleText("温度 (°C)");  // 设置 Y 轴1 标题
-    axisY1->setLabelFormat("%.1f");
-    axisY1->setRange(15, 35); // 设置温度的显示范围
+    m_chart->addAxis(m_axisX, Qt::AlignBottom);
+    m_chart->addAxis(m_axisY1, Qt::AlignLeft);
+    m_chart->addAxis(m_axisY2, Qt::AlignRight);
 
-    QValueAxis *axisY2 = new QValueAxis();
-    axisY2->setTitleText("湿度 (%)");  // 设置 Y 轴2 标题
-    axisY2->setLabelFormat("%.1f");
-    axisY2->setRange(50, 100); // 设置湿度的显示范围
+    m_tempSeries->attachAxis(m_axisX);
+    m_tempSeries->attachAxis(m_axisY1);
+    m_humiditySeries->attachAxis(m_axisX);
+    m_humiditySeries->attachAxis(m_axisY2);
 
-    // 添加 X 轴和 Y 轴到图表
-    m_chart->addAxis(axisX, Qt::AlignBottom);  // 添加 X 轴并设置对齐方式
-    m_chart->addAxis(axisY1, Qt::AlignLeft);   // 添加第一个 Y 轴并设置对齐方式
-    m_chart->addAxis(axisY2, Qt::AlignRight);  // 添加第二个 Y 轴并设置对齐方式
-
-    // 将系列和对应的轴绑定
-    tempSeries->attachAxis(axisX);
-    tempSeries->attachAxis(axisY1);
-
-    humiditySeries->attachAxis(axisX);
-    humiditySeries->attachAxis(axisY2);
-
-
-    // 创建 QChartView 显示图表
     m_charView = new QChartView(m_chart);
-    m_charView->setRenderHint(QPainter::Antialiasing);  // 开启反走样，增强图表显示效果
-    m_charView->setParent(m_parentWidget);  // 设置父控件
-    m_charView->setGeometry(0, 0, 990, 400);  // 设置图表视图的大小
+    m_charView->setRenderHint(QPainter::Antialiasing);
+    m_charView->setParent(m_parentWidget);
+    m_charView->setGeometry(0, 0, 990, 400);
 
-    // 显示图表
+    m_tempSeries->setColor(Qt::green);
+    m_humiditySeries->setColor(Qt::blue);
+    m_chart->setAnimationOptions(QChart::NoAnimation); // 禁用动画提升性能
+
     m_charView->show();
+
+}
+
+void DrawData::startUpdating()
+{
+    if (m_running) return;
+
+    m_running = true;
+
+    timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &DrawData::updateChart);
+    // 在startUpdating()中调整定时器间隔
+    timer->start(1000); // 1s刷新平衡性能与流畅度
+}
+
+
+void DrawData::appendData(double temp, double humidity, qint64 /*timestamp*/)
+{
+    QMutexLocker locker(&m_mutex);
+    // 使用当前系统时间的毫秒级时间戳
+    qint64 currentTimestamp = QDateTime::currentMSecsSinceEpoch();
+    m_dataQueue.enqueue(SensorData(temp, humidity, currentTimestamp));
+}
+
+void DrawData::updateChart()
+{
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+
+    // 对齐到整秒边界
+    const qint64 alignedNow = (now / 1000) * 1000;
+    const qint64 windowStart = alignedNow - 30 * 1000;
+    const qint64 windowEnd = alignedNow;
+
+    // 处理队列数据
+    QVector<SensorData> newData;
+    {
+        QMutexLocker locker(&m_mutex);
+        while (!m_dataQueue.isEmpty()) {
+            SensorData data = m_dataQueue.dequeue();
+            m_lastTemp = data.temperature;
+            m_lastHumidity = data.humidity;
+            newData.append(data);
+        }
+    }
+
+    // 添加新数据点（保持原始时间戳）
+    foreach (const SensorData &data, newData) {
+        m_tempSeries->append(data.timestamp, data.temperature);
+        m_humiditySeries->append(data.timestamp, data.humidity);
+    }
+
+    // 无新数据时添加当前值
+    if (newData.isEmpty()) {
+        m_tempSeries->append(now, m_lastTemp);
+        m_humiditySeries->append(now, m_lastHumidity);
+    }
+
+    // 清理旧数据
+    const qint64 cleanupThreshold = windowStart;
+    while (!m_tempSeries->points().isEmpty() &&
+           m_tempSeries->points().first().x() < cleanupThreshold) {
+        m_tempSeries->remove(0);
+    }
+    while (!m_humiditySeries->points().isEmpty() &&
+           m_humiditySeries->points().first().x() < cleanupThreshold) {
+        m_humiditySeries->remove(0);
+    }
+
+    // 设置轴范围（强制对齐整秒）
+    m_axisX->setRange(QDateTime::fromMSecsSinceEpoch(windowStart),
+                      QDateTime::fromMSecsSinceEpoch(windowEnd));
+    m_axisX->setTickCount(16); // 确保每秒一个刻度
+
+    m_chart->update();
+}
+
+void DrawData::stopUpdating()
+{
+    m_running = false;
+    timer->stop();
 }
