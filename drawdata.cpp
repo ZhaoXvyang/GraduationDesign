@@ -35,7 +35,8 @@ void DrawData::initChart()
 
     m_axisY1 = new QValueAxis();
     m_axisY1->setTitleText("温度 (°C)");
-    m_axisY1->setRange(15, 50);
+    m_axisY1->setRange(-30, 50);
+    m_axisY1->setTickCount(9);
 
     m_axisY2 = new QValueAxis();
     m_axisY2->setTitleText("湿度 (%)");
