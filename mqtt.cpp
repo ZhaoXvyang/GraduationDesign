@@ -76,8 +76,10 @@ void MQTTClient::slot_recvMsg(const QByteArray& message,const QMqttTopicName& to
 {
     if(!isConnected()){qDebug()<<"未连接Mqtt服务器";return;}
     qDebug()<<"收到服务器推送消息:"<<topic.name();
-    QString* msg = new QString(message);
-    qDebug()<<"message:"+*msg;
-    data::Data* d1 = new data::Data(*msg,this);
-    d1->printData();
+    QString msg = QString(message);
+    qDebug()<<"message:"+msg;
+    data::Data d1(msg,this);
+    d1.printData();
+
+    emit signal_new_data_recevied(d1.temp(),d1.humi(),d1.gmtCreate());
 }

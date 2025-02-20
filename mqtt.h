@@ -34,6 +34,7 @@ public:
     bool isConnected();
 
 signals:
+    void signal_new_data_recevied(double temp,double humi,qint64 timestamp);
 
 public slots:
     void slot_connected();
