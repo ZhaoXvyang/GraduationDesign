@@ -2,7 +2,6 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QByteArray>
-#include "data.h"
 
 MQTTClient::MQTTClient(QObject *parent)
     :QObject(parent),m_is_connected(false)
@@ -80,6 +79,7 @@ void MQTTClient::slot_recvMsg(const QByteArray& message,const QMqttTopicName& to
     qDebug()<<"message:"+msg;
     data::Data d1(msg,this);
     d1.printData();
-
+    // 可以在这更新界面
+    emit sinnal_update_labels(d1);
     emit signal_new_data_recevied(d1.temp(),d1.humi(),d1.gmtCreate());
 }

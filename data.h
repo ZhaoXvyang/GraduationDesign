@@ -22,11 +22,28 @@ public:
     void initDataFromQJsonDocument(const QJsonDocument& jsDoc);
     void initDataFromQString(const QString& jsonString);
     void printData();
+    // 拷贝构造函数
+    Data(const Data& other) : QObject(other.parent()),
+        m_temp(other.m_temp),
+        m_humi(other.m_humi),
+        m_airque(other.m_airque),
+        m_led_connected(other.m_led_connected),
+        m_version(other.m_version),
+        m_deviceType(other.m_deviceType),
+        m_iotId(other.m_iotId),
+        m_requestId(other.m_requestId),
+        m_productKey(other.m_productKey),
+        m_gmtCreate(other.m_gmtCreate),
+        m_deviceName(other.m_deviceName),
+        jsDoc(other.jsDoc) {}
 
     // Getter methods for each member variable
-    double temp() const { return m_temp; }            // 获取温度
-    double humi() const { return m_humi; }            // 获取湿度
-    bool ledConnected() const { return m_led_connected; } // 获取LED连接状态
+    float temp() const { return m_temp; }            // 获取温度
+    int humi() const { return m_humi; }            // 获取湿度
+    bool ledConnected() const { return m_led_connected; } // 获取连接状态
+    float airque() const {return m_airque;}             // 获取空气质量
+
+
     QString version() const { return m_version; }      // 获取版本
     QString deviceType() const { return m_deviceType; } // 获取设备类型
     QString iotId() const { return m_iotId; }          // 获取IOT ID
@@ -39,9 +56,11 @@ public:
 protected:
 
 private:
-    double m_temp;          // 温度
-    double m_humi;          // 湿度
+    float m_temp;          // 温度
+    int   m_humi;          // 湿度
+    float m_airque;           // 空气质量
     bool m_led_connected;   // LED等控制开关
+
     QString m_version;      // 版本
     QString m_deviceType;   // 设备类型
     QString m_iotId;        // IOT ID
@@ -54,4 +73,5 @@ private:
 
 
 } // end namespace data
+
 #endif // DATA_H

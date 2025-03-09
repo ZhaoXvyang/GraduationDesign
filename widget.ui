@@ -36,7 +36,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_netSpeed">
+      <widget class="QLabel" name="label_DEVNAME">
        <property name="font">
         <font>
          <pointsize>14</pointsize>
@@ -157,6 +157,12 @@
           </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label_data_temp_title">
+            <property name="font">
+             <font>
+              <pointsize>13</pointsize>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>实时数据:</string>
             </property>
@@ -199,6 +205,12 @@
           </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_data_temp_show">
+            <property name="font">
+             <font>
+              <pointsize>13</pointsize>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>32.30℃</string>
             </property>
@@ -282,6 +294,12 @@
           </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label_data_humi_title">
+            <property name="font">
+             <font>
+              <pointsize>13</pointsize>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>实时数据:</string>
             </property>
@@ -318,8 +336,14 @@
           </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_data_humi_show">
+            <property name="font">
+             <font>
+              <pointsize>13</pointsize>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
-             <string>32.30℃</string>
+             <string>66 %</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
@@ -401,6 +425,12 @@
           </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_data_PM_show">
+            <property name="font">
+             <font>
+              <pointsize>13</pointsize>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>32.30℃</string>
             </property>
@@ -450,6 +480,12 @@
           </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label_data_PM_title">
+            <property name="font">
+             <font>
+              <pointsize>13</pointsize>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>实时数据:</string>
             </property>
@@ -504,6 +540,12 @@
          <layout class="QGridLayout" name="gridLayout_5">
           <item row="0" column="0">
            <widget class="QLabel" name="label_data_airpress_title">
+            <property name="font">
+             <font>
+              <pointsize>13</pointsize>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>实时数据:</string>
             </property>
@@ -559,6 +601,12 @@
           </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_data_airpress_show">
+            <property name="font">
+             <font>
+              <pointsize>13</pointsize>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>32.30℃</string>
             </property>
@@ -601,7 +649,7 @@
         </font>
        </property>
        <property name="title">
-        <string>有害气体浓度</string>
+        <string>挥发气体浓度(酒精)</string>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_6">
         <property name="spacing">
@@ -623,6 +671,12 @@
          <layout class="QGridLayout" name="gridLayout_7">
           <item row="0" column="0">
            <widget class="QLabel" name="label_data_air_title">
+            <property name="font">
+             <font>
+              <pointsize>13</pointsize>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>实时数据:</string>
             </property>
@@ -649,8 +703,14 @@
           </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_data_air_show">
+            <property name="font">
+             <font>
+              <pointsize>13</pointsize>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
-             <string>32.30℃</string>
+             <string>0.07ppm</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
@@ -749,13 +809,6 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_bottom">
-     <item>
-      <widget class="QPushButton" name="pushButton_subscribe">
-       <property name="text">
-        <string>订阅</string>
-       </property>
-      </widget>
-     </item>
      <item>
       <widget class="QPushButton" name="pushButton_publish">
        <property name="text">

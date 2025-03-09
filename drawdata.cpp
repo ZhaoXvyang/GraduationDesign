@@ -35,12 +35,12 @@ void DrawData::initChart()
 
     m_axisY1 = new QValueAxis();
     m_axisY1->setTitleText("温度 (°C)");
-    m_axisY1->setRange(-30, 50);
+    m_axisY1->setRange(0, 40);
     m_axisY1->setTickCount(9);
 
     m_axisY2 = new QValueAxis();
     m_axisY2->setTitleText("湿度 (%)");
-    m_axisY2->setRange(30, 100);
+    m_axisY2->setRange(5, 95);
 
     m_chart->addAxis(m_axisX, Qt::AlignBottom);
     m_chart->addAxis(m_axisY1, Qt::AlignLeft);
@@ -73,7 +73,7 @@ void DrawData::startUpdating()
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &DrawData::updateChart);
     // 在startUpdating()中调整定时器间隔
-    timer->start(1000); // 1s刷新平衡性能与流畅度
+    timer->start(2000); // 1s刷新平衡性能与流畅度
 }
 
 

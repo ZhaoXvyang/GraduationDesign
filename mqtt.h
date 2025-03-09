@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <QtMqtt/qmqttclient.h>
+#include "data.h"
 
 const QString SERVER_ADDRESS("iot-06z00fmnyhez6wa.mqtt.iothub.aliyuncs.com");
 const QString CLIENT_ID("k282yy0B25v.ESP8266_Client|securemode=2,signmethod=hmacsha256,timestamp=1739806999760|");
@@ -15,6 +16,8 @@ const QString PASSWAD("07db379304aa99492e794e04566b70dfe70b93316275eee210edac1c9
 const QString product_key = "k282yy0B25v";
 const QString device_name = "ESP8266_Client";
 const QString device_secret = "aab84cc896d567fcc290af6b4b7d4158";
+
+
 
 class MQTTClient : public QObject
 {
@@ -35,6 +38,7 @@ public:
 
 signals:
     void signal_new_data_recevied(double temp,double humi,qint64 timestamp);
+    void sinnal_update_labels(data::Data label_Data);
 
 public slots:
     void slot_connected();

@@ -7,6 +7,7 @@
 #include <QTimer>
 #include "mqtt.h"
 #include "drawdata.h"
+#include "data.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -30,9 +31,11 @@ public:
     MQTTClient* client;
 
 private slots:
-    void on_pushButton_connect_clicked();
+    void slots_updateLabels(data::Data labelsData);
 
-    void on_pushButton_subscribe_clicked();
+
+private slots:
+    void on_pushButton_connect_clicked();
 
     void on_pushButton_publish_clicked();
 
