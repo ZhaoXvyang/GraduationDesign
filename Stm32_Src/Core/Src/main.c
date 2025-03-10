@@ -20,6 +20,7 @@
 #include "main.h"
 #include "adc.h"
 #include "dma.h"
+#include "i2c.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -36,6 +37,7 @@
 #include <string.h>
 #include "My_esp8266.h"
 #include "cjson.h"
+#include "bmp180.h"
 
 //#include "DATA.h"
 /* USER CODE END Includes */
@@ -57,6 +59,7 @@
 float temperature = 1.0;
 uint8_t humidity = 1;
 float alcohol_concentration;
+//BMP180Data_T g_tBMP180 = {0};
 
 uint8_t not_init = 1; // 是否初始化完成，初始化完成才显示数据页面
 /* USER CODE END PM */
@@ -126,23 +129,28 @@ int main(void)
   MX_TIM3_Init();
   MX_USART2_UART_Init();
   MX_ADC1_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2); // 开启中断
   HAL_TIM_Base_Start_IT(&htim3); // 开启中断
-  // 启动 USART2 的接收中断
-  //HAL_UART_Receive_IT(&huart2, (uint8_t *)&aRxBuffer, 1);
+  BMP180_Init();
   OLED_Init(); // OLED 初始化
   HAL_Delay(1000);
   OLED_Clear();
   OLED_ShowString(2, 0, "Init WIFI ...", OLED_8X16);
   OLED_Update();
+  // -------阿里云MQTT初始化-----------
+  /*
   ESP8266_Init();
   Ali_Yun_Init();
+  SensorData sensor = {25.5, 60, 0.8}; // 传感器数据
+  */
+  // -------阿里云MQTT初始化-----------
   HAL_Delay(3000);
 
  //---------------------
    not_init = 0; // 初始化都完成 进行数据显示
-   SensorData sensor = {25.5, 60, 0.8}; // 传感器数据
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -152,6 +160,8 @@ int main(void)
     readData();
     MQ135_Init();
     MQ135_ReadData(&alcohol_concentration);
+    printf("温度%.2f",g_tBMP180.fPressure);
+      /*
     // 更新传感器数据
     sensor.temp = temperature; // 更新温度
     sensor.humi = humidity;     // 更新湿度
@@ -159,9 +169,9 @@ int main(void)
 
     // 发送数据
     Ali_Yun_Send(&sensor);
+      */
     HAL_Delay(1000);
       
-
 
     /* USER CODE END WHILE */
 
@@ -320,6 +330,7 @@ void showData(void) {
     char tempStr[16];  
     char humiStr[16];  
     char alcohol[16];  
+    char airPress[16]; 
 
     OLED_Clear();
 
@@ -328,10 +339,12 @@ void showData(void) {
             sprintf(tempStr, "Temp: %.1f C", temperature);
             sprintf(humiStr, "Humi: %u %%", humidity);
             sprintf(alcohol, "Airt: %.2f %%", alcohol_concentration);
-
+            sprintf(airPress, "AirP: %d hpa", (int)g_tBMP180.fPressure/100);
+        
             OLED_ShowString(2, 0, tempStr, OLED_6X8);
             OLED_ShowString(2, 10, humiStr, OLED_6X8);
             OLED_ShowString(2, 20, alcohol, OLED_6X8);
+            OLED_ShowString(2, 30, airPress, OLED_6X8);
             break;
 
         case PAGE_ALARM_THRESHOLDS:  // 报警阈值页面
@@ -350,7 +363,14 @@ void showData(void) {
 }
 
 void readData(void){
-    DHT11_Read_Data(&temperature, &humidity);    
+    DHT11_Read_Data(&temperature, &humidity);
+    BMP180_StartPressureSample();
+    HAL_Delay(10);
+    BMP180_GetTemp(&g_tBMP180);
+    
+    BMP180_StartPressureSample();
+    HAL_Delay(100);
+    BMP180_GetPressureAltitude(&g_tBMP180);
 }
 
 
