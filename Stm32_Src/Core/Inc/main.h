@@ -50,7 +50,8 @@ void Update_Display(void);
 /* USER CODE BEGIN EM */
 extern  float temperature;
 extern  uint8_t humidity;
-
+// 选中行索引，默认选中第一行（温度阈值）
+extern uint8_t selectedThresholdIndex;
 // ESP8266接收缓冲区
 
 
@@ -66,6 +67,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define LED_Pin GPIO_PIN_13
 #define LED_GPIO_Port GPIOC
+#define ILED_Pin GPIO_PIN_5
+#define ILED_GPIO_Port GPIOA
 #define DHT11_Pin GPIO_PIN_7
 #define DHT11_GPIO_Port GPIOA
 #define KEY3_Pin GPIO_PIN_14

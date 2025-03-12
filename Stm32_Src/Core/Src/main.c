@@ -38,6 +38,7 @@
 #include "My_esp8266.h"
 #include "cjson.h"
 #include "bmp180.h"
+#include "pm25_sensor.h"
 
 //#include "DATA.h"
 /* USER CODE END Includes */
@@ -56,9 +57,21 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+
 float temperature = 1.0;
+float density = 1.0;
 uint8_t humidity = 1;
-float alcohol_concentration;
+uint16_t airQuality = 0;
+
+uint8_t selectedThresholdIndex = 0; // 默认选中第 0 行（温度）
+
+float tempThreshold = 30.0;   // 温度报警阈值（°C）
+uint8_t humiThreshold = 60;   // 湿度报警阈值（%）
+int airQThreshold = 1000;     // 空气质量报警阈值（ppm）
+int pressThreshold = 1010;    // 气压报警阈值（hPa）
+float pm25Threshold = 75.0;   // PM2.5 报警阈值（ug/m3）
+
+
 //BMP180Data_T g_tBMP180 = {0};
 
 uint8_t not_init = 1; // 是否初始化完成，初始化完成才显示数据页面
@@ -83,7 +96,7 @@ void SystemClock_Config(void);
 typedef struct {
     float temp;
     uint8_t humi;
-    float airque;
+    int airque;
 } SensorData;
 
 void Ali_Yun_Send(SensorData *sensor);
@@ -92,6 +105,33 @@ void Ali_Yun_Send(SensorData *sensor);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+#define SYS_VOLTAGE 5.0
+float adc1_value,adc2_value;
+
+void Test_ADC_Readings(void) {
+    uint32_t adc1_value, adc2_value;
+    float voltage1, voltage2;
+
+    // 读取 ADC1
+    HAL_ADC_Start(&hadc1);  // 启动 ADC1
+    HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);  // 等待转换完成
+    adc1_value = HAL_ADC_GetValue(&hadc1);  // 获取 ADC1 值
+    HAL_ADC_Stop(&hadc1);  // 停止 ADC1
+
+    // 读取 ADC2
+    HAL_ADC_Start(&hadc2);  // 启动 ADC2
+    HAL_ADC_PollForConversion(&hadc2, HAL_MAX_DELAY);  // 等待转换完成
+    adc2_value = HAL_ADC_GetValue(&hadc2);  // 获取 ADC2 值
+    HAL_ADC_Stop(&hadc2);  // 停止 ADC2
+
+    // 计算电压
+    voltage1 = (SYS_VOLTAGE / 4096.0) * adc1_value;
+    voltage2 = (SYS_VOLTAGE / 4096.0) * adc2_value;
+
+    // 打印 ADC 结果
+    printf("ADC1 Value: %lu, Voltage: %.3f V\n", adc1_value, voltage1);
+    printf("ADC2 Value: %lu, Voltage: %.3f V\n", adc2_value, voltage2);
+}
 /* USER CODE END 0 */
 
 /**
@@ -130,10 +170,12 @@ int main(void)
   MX_USART2_UART_Init();
   MX_ADC1_Init();
   MX_I2C2_Init();
+  MX_ADC2_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2); // 开启中断
   HAL_TIM_Base_Start_IT(&htim3); // 开启中断
   BMP180_Init();
+  PM25_Init(); // 初始化 PM2.5 传感器
   OLED_Init(); // OLED 初始化
   HAL_Delay(1000);
   OLED_Clear();
@@ -159,13 +201,18 @@ int main(void)
   {
     readData();
     MQ135_Init();
-    MQ135_ReadData(&alcohol_concentration);
-    printf("温度%.2f",g_tBMP180.fPressure);
+    MQ135_ReadData(&airQuality);
+    //Test_ADC_Readings();
+    density = PM25_ReadDensity();
+      // 获取 ADC 值
+
+
+    //printf("温度%.2f",g_tBMP180.fPressure);
       /*
     // 更新传感器数据
     sensor.temp = temperature; // 更新温度
     sensor.humi = humidity;     // 更新湿度
-    sensor.airque = alcohol_concentration; // 更新空气质量
+    sensor.airque = airQStr; // 更新空气质量
 
     // 发送数据
     Ali_Yun_Send(&sensor);
@@ -324,33 +371,74 @@ void Ali_Yun_GetRCV(void)
 */
 
 
+// PAGE 1数据显示
+void Display_SensorData(void) {
+    char buffer[5][20]; // 存储格式化后的字符串
+
+    sprintf(buffer[0], "Temp:   %.1f C", temperature);   // 温度（摄氏度）
+    sprintf(buffer[1], "Humi:   %u %%", humidity);       // 湿度（百分比）
+    sprintf(buffer[2], "AirQ:   %d ppm", airQuality);    // 空气质量（ppm）
+    sprintf(buffer[3], "Press:  %d hPa", (int)(g_tBMP180.fPressure / 100)); // 气压（hPa）
+    sprintf(buffer[4], "PM2.5:  %.2f ug/m3", density);   // PM2.5 浓度（ug/m3）
+
+    // 清除 OLED 显示，避免残留
+    OLED_Clear();
+
+    // 逐行显示传感器数据
+    for (int i = 0; i < 5; i++) {
+        OLED_ShowString(2, i * 10, buffer[i], OLED_6X8);
+    }
+}
+
+// 阈值显示
+// PAGE 2 显示阈值设定
+// PAGE 2 显示阈值设定，支持闪烁显示
+void Display_Thresholds(void) {
+    char buffer[5][20]; // 存储格式化后的字符串
+
+    sprintf(buffer[0], "Temp Th:  %.1f C", tempThreshold);    // 温度阈值
+    sprintf(buffer[1], "Humi Th:  %u %%", humiThreshold);     // 湿度阈值
+    sprintf(buffer[2], "AirQ Th:  %d ppm", airQThreshold);    // 空气质量阈值
+    sprintf(buffer[3], "Press Th: %d hPa", pressThreshold);   // 气压阈值
+    sprintf(buffer[4], "PM2.5 Th: %.2f ug/m3", pm25Threshold); // PM2.5 阈值
+
+    // 清除 OLED 显示，避免残留
+    OLED_Clear();
+
+    // 获取当前系统时间
+    uint32_t currentTime = HAL_GetTick();
+
+    // 逐行显示阈值设定
+    for (int i = 0; i < 5; i++) {
+        if (i == selectedThresholdIndex) {
+            // 让当前选中的行每 500ms 闪烁一次
+            if ((currentTime / 500) % 2 == 0) {
+                OLED_ShowString(2, i * 10, buffer[i], OLED_6X8);
+            }
+        } else {
+            OLED_ShowString(2, i * 10, buffer[i], OLED_6X8);
+        }
+    }
+}
+
 
 void showData(void) {
     if (not_init == 1) return;
     char tempStr[16];  
     char humiStr[16];  
-    char alcohol[16];  
-    char airPress[16]; 
+    char airQueStr[16];  
+    char airPress[16];
+    char densityStr[16];
 
     OLED_Clear();
 
     switch (currentPage) {
         case PAGE_SENSOR_DATA:  // 传感器数据页面
-            sprintf(tempStr, "Temp: %.1f C", temperature);
-            sprintf(humiStr, "Humi: %u %%", humidity);
-            sprintf(alcohol, "Airt: %.2f %%", alcohol_concentration);
-            sprintf(airPress, "AirP: %d hpa", (int)g_tBMP180.fPressure/100);
-        
-            OLED_ShowString(2, 0, tempStr, OLED_6X8);
-            OLED_ShowString(2, 10, humiStr, OLED_6X8);
-            OLED_ShowString(2, 20, alcohol, OLED_6X8);
-            OLED_ShowString(2, 30, airPress, OLED_6X8);
+            Display_SensorData();
             break;
 
         case PAGE_ALARM_THRESHOLDS:  // 报警阈值页面
-            OLED_ShowString(2, 0, "Alarm Thresholds", OLED_6X8);
-            OLED_ShowString(2, 10, "Temp Limit: 30.0C", OLED_6X8);
-            OLED_ShowString(2, 20, "Humi Limit: 60%", OLED_6X8);
+            Display_Thresholds();
             break;
 
         case PAGE_THREE:  // 第三页

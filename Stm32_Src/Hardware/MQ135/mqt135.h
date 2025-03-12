@@ -6,7 +6,7 @@
  
  
 void MQ135_Init(void);
-void MQ135_ReadData(float *concentration);
+void MQ135_ReadData(uint16_t *concentration);
  
  
 #endif
