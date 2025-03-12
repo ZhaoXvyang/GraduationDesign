@@ -48,10 +48,20 @@ void Update_Display(void);
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-extern  float temperature;
-extern  uint8_t humidity;
-// 选中行索引，默认选中第一行（温度阈值）
+// 共享的环境数据
+extern float temperature;
+extern float density;
+extern uint8_t humidity;
+extern uint16_t airQuality;
+
+// 共享的报警阈值
 extern uint8_t selectedThresholdIndex;
+extern float tempThreshold;
+extern uint8_t humiThreshold;
+extern int airQThreshold;
+extern int pressThreshold;
+extern float pm25Threshold;
+
 // ESP8266接收缓冲区
 
 

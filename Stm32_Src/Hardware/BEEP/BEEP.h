@@ -10,5 +10,6 @@ extern uint8_t beepState;  // 0: Í£Ö¹, 1: ·äÃùÆ÷·¢Éù, 2: Í£Ö¹·äÃùÆ÷
 extern _Bool warring;
 // º¯ÊıÉùÃ÷
 void BEEP_1S(void);
+void CheckThreshold(void);
 
 #endif // __BEEP_H

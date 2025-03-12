@@ -39,42 +39,47 @@ void PM25_Init(void) {
 float PM25_ReadDensity(void) {
     uint32_t adcvalue = 0;
     float voltage, density;
-    int samples = 10; // 采样 10 次求平均值
+    int samples = 20; // 提高采样次数
     uint32_t sum_adc = 0;
-    int valid_samples = 0; // 记录有效数据个数
+    int valid_samples = 0;
 
-    HAL_GPIO_WritePin(ILED_GPIO_Port, ILED_Pin, GPIO_PIN_SET);
-    delayXus(500); // 延长预热时间，保证 LED 亮起后稳定
+    HAL_GPIO_WritePin(ILED_GPIO_Port, ILED_Pin, GPIO_PIN_RESET);
+    delayXus(500);
 
     for (int i = 0; i < samples; i++) {
         HAL_ADC_Start(&hadc2);
         HAL_ADC_PollForConversion(&hadc2, HAL_MAX_DELAY);
         uint32_t value = HAL_ADC_GetValue(&hadc2);
 
-        if (value > 0) { // 只统计非零值
+        if (value > 0) { 
             sum_adc += value;
             valid_samples++;
         }
 
-        delayXus(50); // 避免采样过快
+        delayXus(50);
     }
 
-    HAL_GPIO_WritePin(ILED_GPIO_Port, ILED_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ILED_GPIO_Port, ILED_Pin, GPIO_PIN_SET);
 
     if (valid_samples == 0) { 
-        return 0; // 若所有采样值都为 0，则直接返回 0
+        return 1.0; // 若所有采样值都为 0，返回 1.0（避免完全为 0）
     }
 
-    adcvalue = sum_adc / valid_samples; // 计算有效均值
+    adcvalue = sum_adc / valid_samples;
 
     voltage = (SYS_VOLTAGE / ADC_RESOLUTION) * adcvalue * GAIN_FACTOR;
 
-    if (voltage >= NO_DUST_VOLTAGE) {
-        voltage -= NO_DUST_VOLTAGE;
+    if (voltage >= NO_DUST_VOLTAGE - 0.02) {  // 降低 NO_DUST_VOLTAGE
+        voltage -= (NO_DUST_VOLTAGE - 0.02);
         density = voltage * COV_RATIO;
     } else {
-        density = 0;
+        density = 0.5; // 不是 0，而是 0.5，表示极低浓度
     }
-    
+
+    // 平滑滤波，防止波动
+    static float last_density = 1.0;
+    density = 0.8 * last_density + 0.2 * density; // 让数值变化更平滑
+    last_density = density;
+
     return density;
 }

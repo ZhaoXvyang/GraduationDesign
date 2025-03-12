@@ -205,11 +205,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim->Instance == htim3.Instance) {
         timer3OverflowCount++;
         // 每1000次溢出执行传感器数据采集
-        if (timer3OverflowCount >= 1000) {
+        if (timer3OverflowCount >= 500) {
             timer3OverflowCount = 0;
             // 在这里调用 BEEP 函数或传感器数据读取函数
             BEEP_1S();
-
         }
     }
 }

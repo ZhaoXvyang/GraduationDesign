@@ -58,18 +58,20 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
+// 共享的环境数据
 float temperature = 1.0;
 float density = 1.0;
 uint8_t humidity = 1;
 uint16_t airQuality = 0;
 
+// 共享的报警阈值
 uint8_t selectedThresholdIndex = 0; // 默认选中第 0 行（温度）
 
-float tempThreshold = 30.0;   // 温度报警阈值（°C）
-uint8_t humiThreshold = 60;   // 湿度报警阈值（%）
-int airQThreshold = 1000;     // 空气质量报警阈值（ppm）
-int pressThreshold = 1010;    // 气压报警阈值（hPa）
-float pm25Threshold = 75.0;   // PM2.5 报警阈值（ug/m3）
+float tempThreshold = 30.0;
+uint8_t humiThreshold = 60;
+int airQThreshold = 200;
+int pressThreshold = 1010;
+float pm25Threshold = 75.0;
 
 
 //BMP180Data_T g_tBMP180 = {0};
@@ -202,8 +204,9 @@ int main(void)
     readData();
     MQ135_Init();
     MQ135_ReadData(&airQuality);
-    //Test_ADC_Readings();
+    Test_ADC_Readings();
     density = PM25_ReadDensity();
+    CheckThreshold();
       // 获取 ADC 值
 
 
