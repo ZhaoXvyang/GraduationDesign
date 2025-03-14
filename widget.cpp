@@ -25,14 +25,6 @@ Widget::~Widget()
     delete ui;
 }
 
-void Widget::on_pushButton_publish_clicked()
-{
-    qDebug()<<"on_pushButton_publish_clicked";
-    if(client!=nullptr&&(client->m_client!=nullptr)){
-        client->publish();
-    }
-}
-
 // 设置连接状态的函数
 void Widget::setConnectionStatus(const QString &status)
 {

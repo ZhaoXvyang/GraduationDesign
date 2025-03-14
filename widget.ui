@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Widget</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,4,9,2">
+  <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,4,9,3">
    <property name="topMargin">
     <number>1</number>
    </property>
@@ -145,16 +145,6 @@
         </property>
         <item>
          <layout class="QGridLayout" name="gridLayout">
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_27">
-            <property name="text">
-             <string>TextLabel</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label_data_temp_title">
             <property name="font">
@@ -171,32 +161,13 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_15">
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_28">
             <property name="frameShape">
              <enum>QFrame::Shape::Box</enum>
             </property>
-            <property name="frameShadow">
-             <enum>QFrame::Shadow::Raised</enum>
-            </property>
             <property name="text">
-             <string>阈值:min</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLabel" name="label_16">
-            <property name="frameShape">
-             <enum>QFrame::Shape::Box</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Shadow::Raised</enum>
-            </property>
-            <property name="text">
-             <string>阈值:max</string>
+             <string>max</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -219,19 +190,6 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QLabel" name="label_28">
-            <property name="text">
-             <string>TextLabel</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="lineEdit_8"/>
-          </item>
           <item row="4" column="0">
            <widget class="QLineEdit" name="lineEdit"/>
           </item>
@@ -239,6 +197,42 @@
            <widget class="Line" name="line_2">
             <property name="orientation">
              <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_27">
+            <property name="frameShape">
+             <enum>QFrame::Shape::Box</enum>
+            </property>
+            <property name="text">
+             <string>min</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QLabel" name="label_16">
+            <property name="frameShape">
+             <enum>QFrame::Shape::Box</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Shadow::Raised</enum>
+            </property>
+            <property name="text">
+             <string>阈值:max</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QPushButton" name="pushButton">
+            <property name="text">
+             <string>PushButton</string>
             </property>
            </widget>
           </item>
@@ -276,22 +270,6 @@
         </property>
         <item>
          <layout class="QGridLayout" name="gridLayout_3">
-          <item row="3" column="1">
-           <widget class="QLabel" name="label_18">
-            <property name="frameShape">
-             <enum>QFrame::Shape::Box</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Shadow::Raised</enum>
-            </property>
-            <property name="text">
-             <string>阈值:max</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label_data_humi_title">
             <property name="font">
@@ -310,29 +288,39 @@
           </item>
           <item row="2" column="1">
            <widget class="QLabel" name="label_30">
+            <property name="frameShape">
+             <enum>QFrame::Shape::Box</enum>
+            </property>
             <property name="text">
-             <string>TextLabel</string>
+             <string>max</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignCenter</set>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_17">
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_29">
             <property name="frameShape">
              <enum>QFrame::Shape::Box</enum>
             </property>
-            <property name="frameShadow">
-             <enum>QFrame::Shadow::Raised</enum>
-            </property>
             <property name="text">
-             <string>阈值:min</string>
+             <string>min</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignCenter</set>
             </property>
            </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="Line" name="line_3">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLineEdit" name="lineEdit_3"/>
           </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_data_humi_show">
@@ -350,26 +338,26 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="lineEdit_9"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_29">
+          <item row="3" column="0" colspan="2">
+           <widget class="QLabel" name="label_18">
+            <property name="frameShape">
+             <enum>QFrame::Shape::Box</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Shadow::Raised</enum>
+            </property>
             <property name="text">
-             <string>TextLabel</string>
+             <string>阈值:max</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignCenter</set>
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QLineEdit" name="lineEdit_3"/>
-          </item>
-          <item row="1" column="0" colspan="2">
-           <widget class="Line" name="line_3">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
+          <item row="4" column="1">
+           <widget class="QPushButton" name="pushButton_2">
+            <property name="text">
+             <string>PushButton</string>
             </property>
            </widget>
           </item>
@@ -407,22 +395,6 @@
         </property>
         <item>
          <layout class="QGridLayout" name="gridLayout_4">
-          <item row="3" column="1">
-           <widget class="QLabel" name="label_20">
-            <property name="frameShape">
-             <enum>QFrame::Shape::Box</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Shadow::Raised</enum>
-            </property>
-            <property name="text">
-             <string>阈值:max</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_data_PM_show">
             <property name="font">
@@ -441,8 +413,11 @@
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_31">
+            <property name="frameShape">
+             <enum>QFrame::Shape::Box</enum>
+            </property>
             <property name="text">
-             <string>TextLabel</string>
+             <string>min</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -451,27 +426,11 @@
           </item>
           <item row="2" column="1">
            <widget class="QLabel" name="label_32">
-            <property name="text">
-             <string>TextLabel</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="lineEdit_10"/>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_19">
             <property name="frameShape">
              <enum>QFrame::Shape::Box</enum>
             </property>
-            <property name="frameShadow">
-             <enum>QFrame::Shadow::Raised</enum>
-            </property>
             <property name="text">
-             <string>阈值:min</string>
+             <string>max</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -501,6 +460,29 @@
            <widget class="Line" name="line_4">
             <property name="orientation">
              <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QLabel" name="label_20">
+            <property name="frameShape">
+             <enum>QFrame::Shape::Box</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Shadow::Raised</enum>
+            </property>
+            <property name="text">
+             <string>阈值:max</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QPushButton" name="pushButton_3">
+            <property name="text">
+             <string>PushButton</string>
             </property>
            </widget>
           </item>
@@ -557,42 +539,13 @@
           <item row="4" column="0">
            <widget class="QLineEdit" name="lineEdit_5"/>
           </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_21">
-            <property name="frameShape">
-             <enum>QFrame::Shape::Box</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Shadow::Raised</enum>
-            </property>
-            <property name="text">
-             <string>阈值:min</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_33">
-            <property name="text">
-             <string>TextLabel</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLabel" name="label_22">
             <property name="frameShape">
              <enum>QFrame::Shape::Box</enum>
             </property>
-            <property name="frameShadow">
-             <enum>QFrame::Shadow::Raised</enum>
-            </property>
             <property name="text">
-             <string>阈值:max</string>
+             <string>min</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -615,13 +568,13 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="lineEdit_11"/>
-          </item>
           <item row="2" column="1">
            <widget class="QLabel" name="label_34">
+            <property name="frameShape">
+             <enum>QFrame::Shape::Box</enum>
+            </property>
             <property name="text">
-             <string>TextLabel</string>
+             <string>max</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -632,6 +585,29 @@
            <widget class="Line" name="line_5">
             <property name="orientation">
              <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QLabel" name="label_22">
+            <property name="frameShape">
+             <enum>QFrame::Shape::Box</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Shadow::Raised</enum>
+            </property>
+            <property name="text">
+             <string>阈值:max</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QPushButton" name="pushButton_4">
+            <property name="text">
+             <string>PushButton</string>
             </property>
            </widget>
           </item>
@@ -649,7 +625,7 @@
         </font>
        </property>
        <property name="title">
-        <string>挥发气体浓度(酒精)</string>
+        <string>有害气体浓度</string>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_6">
         <property name="spacing">
@@ -685,22 +661,6 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_25">
-            <property name="frameShape">
-             <enum>QFrame::Shape::Box</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Shadow::Raised</enum>
-            </property>
-            <property name="text">
-             <string>阈值:min</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_data_air_show">
             <property name="font">
@@ -717,13 +677,13 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="lineEdit_13"/>
-          </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_37">
+            <property name="frameShape">
+             <enum>QFrame::Shape::Box</enum>
+            </property>
             <property name="text">
-             <string>TextLabel</string>
+             <string>min</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -735,15 +695,25 @@
           </item>
           <item row="2" column="1">
            <widget class="QLabel" name="label_38">
+            <property name="frameShape">
+             <enum>QFrame::Shape::Box</enum>
+            </property>
             <property name="text">
-             <string>TextLabel</string>
+             <string>max</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignCenter</set>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="1" column="0" colspan="2">
+           <widget class="Line" name="line_7">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
            <widget class="QLabel" name="label_26">
             <property name="frameShape">
              <enum>QFrame::Shape::Box</enum>
@@ -759,10 +729,10 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0" colspan="2">
-           <widget class="Line" name="line_7">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
+          <item row="4" column="1">
+           <widget class="QPushButton" name="pushButton_5">
+            <property name="text">
+             <string>PushButton</string>
             </property>
            </widget>
           </item>
@@ -781,7 +751,7 @@
      <item>
       <widget class="QGroupBox" name="groupBox_temp1">
        <property name="title">
-        <string>温湿度</string>
+        <string>温湿度实时曲线图</string>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <property name="spacing">
@@ -809,13 +779,9 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_bottom">
-     <item>
-      <widget class="QPushButton" name="pushButton_publish">
-       <property name="text">
-        <string>发布</string>
-       </property>
-      </widget>
-     </item>
+     <property name="spacing">
+      <number>90</number>
+     </property>
      <item>
       <widget class="QPushButton" name="pushButton_connect">
        <property name="text">
@@ -827,13 +793,6 @@
       <widget class="QPushButton" name="pushButton_disconnect">
        <property name="text">
         <string>断开服务器</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButton_setValue">
-       <property name="text">
-        <string>设置阈值</string>
        </property>
       </widget>
      </item>

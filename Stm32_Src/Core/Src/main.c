@@ -98,7 +98,7 @@ void SystemClock_Config(void);
 typedef struct {
     float temp;
     uint8_t humi;
-    int airque;
+    uint16_t airque;
 } SensorData;
 
 void Ali_Yun_Send(SensorData *sensor);
@@ -180,16 +180,17 @@ int main(void)
   PM25_Init(); // 初始化 PM2.5 传感器
   OLED_Init(); // OLED 初始化
   HAL_Delay(1000);
+
   OLED_Clear();
   OLED_ShowString(2, 0, "Init WIFI ...", OLED_8X16);
+  
   OLED_Update();
   // -------阿里云MQTT初始化-----------
-  /*
   ESP8266_Init();
   Ali_Yun_Init();
   SensorData sensor = {25.5, 60, 0.8}; // 传感器数据
-  */
   // -------阿里云MQTT初始化-----------
+  HAL_GPIO_WritePin(LED_STATE_GPIO_Port, LED_STATE_Pin, GPIO_PIN_SET); // 状态灯显示
   HAL_Delay(3000);
 
  //---------------------
@@ -202,24 +203,20 @@ int main(void)
   while (1)
   {
     readData();
-    MQ135_Init();
-    MQ135_ReadData(&airQuality);
-    Test_ADC_Readings();
-    density = PM25_ReadDensity();
-    CheckThreshold();
-      // 获取 ADC 值
-
+    //Test_ADC_Readings();
+    CheckThreshold(); // 阈值检测
+    // 获取 ADC 值
 
     //printf("温度%.2f",g_tBMP180.fPressure);
-      /*
+
     // 更新传感器数据
     sensor.temp = temperature; // 更新温度
     sensor.humi = humidity;     // 更新湿度
-    sensor.airque = airQStr; // 更新空气质量
+    sensor.airque = airQuality; // 更新空气质量
 
     // 发送数据
     Ali_Yun_Send(&sensor);
-      */
+
     HAL_Delay(1000);
       
 
@@ -284,7 +281,7 @@ void Ali_Yun_Send(SensorData *sensor) {
     char msg_buf[1024];
 
     // 手动拼接字符串，包含空气质量数据
-    sprintf(msg_buf, "AT+MQTTPUB=0,\"/sys/k282yy0B25v/ESP8266_dev/thing/event/property/post\",\"{params:{\\\"temp\\\":%.1f\\,\\\"humi\\\":%d\\,\\\"airque\\\":%.2f}}\",0,0\r\n", sensor->temp, sensor->humi, sensor->airque);
+    sprintf(msg_buf, "AT+MQTTPUB=0,\"/sys/k282yy0B25v/ESP8266_dev/thing/event/property/post\",\"{params:{\\\"temp\\\":%.1f\\,\\\"humi\\\":%d\\,\\\"airque\\\":%d}}\",0,0\r\n", sensor->temp, sensor->humi, sensor->airque);
 
     // 打印和发送数据
     printf("开始发送数据: %s\r\n", msg_buf);
@@ -454,14 +451,20 @@ void showData(void) {
 }
 
 void readData(void){
+    // 气体质量
+    MQ135_Init();
+    MQ135_ReadData(&airQuality);
+    // 温\湿度
     DHT11_Read_Data(&temperature, &humidity);
+    // 气压
     BMP180_StartPressureSample();
     HAL_Delay(10);
     BMP180_GetTemp(&g_tBMP180);
-    
     BMP180_StartPressureSample();
     HAL_Delay(100);
     BMP180_GetPressureAltitude(&g_tBMP180);
+    // PM2.5检测
+    density = PM25_ReadDensity();
 }
 
 
