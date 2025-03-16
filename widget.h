@@ -32,7 +32,7 @@ public:
 
 private slots:
     void slots_updateLabels(data::Data labelsData);
-
+    void slots_updateThresholdLabels(data::Data labelsData);
 
 private slots:
     void on_pushButton_connect_clicked();

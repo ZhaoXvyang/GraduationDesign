@@ -37,7 +37,8 @@ public:
 
 signals:
     void signal_new_data_recevied(double temp,double humi,qint64 timestamp);
-    void sinnal_update_labels(data::Data label_Data);
+    void signal_update_labels(data::Data label_Data);
+    void signal_updateThresholdLabels(data::Data label_Data);
 
 public slots:
     void slot_connected();

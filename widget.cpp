@@ -39,27 +39,43 @@ void Widget::setConnectionStatus(const QString &status)
 
 void Widget::slots_updateLabels(data::Data labelsData)
 {
-    labelsData.printData();
-
     QString devName = QString("远端设备:%1").arg(labelsData.deviceName());
     ui->label_DEVNAME->setText(devName);
     // 将 float 转换为 QString，并格式化为 "00.00" 样式
     QString tempString = QString("%1 %2").arg(labelsData.temp(), 5, 'f', 2, QChar('0')).arg("℃");
     ui->label_data_temp_show->setText(tempString);
     // 格式化湿度（假设湿度是整数，不带小数）
-    QString humiString = QString("%1 %").arg(labelsData.humi());
+    QString humiString = QString("%1 RH%").arg(labelsData.humi());
     ui->label_data_humi_show->setText(humiString);
     // 空气质量
     QString airqueString = QString("%1 ppm").arg(labelsData.airque());
     ui->label_data_air_show->setText(airqueString);
     // 气压
-    qDebug()<<"当前气压:labelsData.airpress()"<<labelsData.airpress();
     QString airPressString = QString("%1 hpa").arg(labelsData.airpress());
     ui->label_data_airpress_show->setText(airPressString);
     // PM2.5
     QString PMString = QString("%1 ug/m³").arg(QString::number(labelsData.density(), 'f', 2));
     ui->label_data_PM_show->setText(PMString);
+}
 
+void Widget::slots_updateThresholdLabels(data::Data labelsData)
+{
+    // 温度阈值
+    QString tempThresholdString = QString("阈值: %1 %2").arg(labelsData.tempThreshold(), 5, 'f', 2, QChar('0')).arg("℃");
+    ui->label_tempThreshold->setText(tempThresholdString);
+    // 湿度阈值（假设湿度是整数，不带小数）
+    QString humiThresholdString = QString("阈值: %1 RH%").arg(labelsData.humiThreshold());
+    ui->label_humiThreshold->setText(humiThresholdString);
+    // 空气质量阈值
+    QString airQThresholdString = QString("阈值: %1 ppm").arg(labelsData.airQThreshold());
+    ui->label_airQThreshold->setText(airQThresholdString);
+    // 气压阈值
+    QString pressThresholdString = QString("阈值: %1 hpa").arg(labelsData.pressThreshold());
+    ui->label_pressThreshold->setText(pressThresholdString);
+    // PM2.5 阈值
+    QString pm25ThresholdString =
+        QString("阈值: %1 ug/m³").arg(QString::number(labelsData.pm25Threshold(), 'f', 2));
+    ui->label_pm25Threshold->setText(pm25ThresholdString);
 }
 
 void Widget::on_pushButton_disconnect_clicked()
@@ -105,7 +121,10 @@ void Widget::on_pushButton_connect_clicked()
                     qDebug() << "drawData is nullptr!";
                 }
             });
-    connect(client,&MQTTClient::sinnal_update_labels,this,&Widget::slots_updateLabels);
+    connect(client,&MQTTClient::signal_update_labels,this,
+            &Widget::slots_updateLabels);
+    connect(client,&MQTTClient::signal_updateThresholdLabels,this,
+            &Widget::slots_updateThresholdLabels);
     drawData->startUpdating();
 }
 

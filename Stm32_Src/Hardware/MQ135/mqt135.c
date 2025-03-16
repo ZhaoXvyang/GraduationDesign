@@ -56,7 +56,7 @@ void MQ135_ReadData(uint16_t *concentration) {
         if (HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC)) {
             val = HAL_ADC_GetValue(&hadc1);
         } else {
-            *concentration = -1; // ∂¡»° ß∞‹
+            *concentration = 0; // ∂¡»° ß∞‹
             return;
         }
 

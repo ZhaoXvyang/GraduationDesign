@@ -22,15 +22,16 @@ void adjustThreshold(int index, int adjustment) {
             humiThreshold = (humiThreshold + adjustment >= 0) ? (humiThreshold + adjustment) : 0;
             break;
         case 2: // 空气质量
-            airQThreshold += adjustment;
+            airQThreshold += (adjustment * 10);
             break;
         case 3: // 压力
-            pressThreshold += adjustment;
+            pressThreshold += (adjustment * 10);
             break;
         case 4: // PM2.5
             pm25Threshold += adjustment;
             break;
     }
+    ThresholdsChanged = 1;
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {

@@ -71,15 +71,28 @@ void MQTTClient::slot_connected()
     qDebug()<<"连接成功!";
 }
 
-void MQTTClient::slot_recvMsg(const QByteArray& message,const QMqttTopicName& topic)
-{
-    if(!isConnected()){qDebug()<<"未连接Mqtt服务器";return;}
-    qDebug()<<"收到服务器推送消息:"<<topic.name();
+void MQTTClient::slot_recvMsg(const QByteArray& message, const QMqttTopicName& topic) {
+    if (!isConnected()) {
+        qDebug() << "未连接Mqtt服务器";
+        return;
+    }
+
+    qDebug() << "收到服务器推送消息:" << topic.name();
     QString msg = QString(message);
-    qDebug()<<"message:"+msg;
-    data::Data d1(msg,this);
+    qDebug() << "message:" << msg;
+
+    data::Data d1(msg, this);
     d1.printData();
-    // 可以在这更新界面
-    emit sinnal_update_labels(d1);
-    emit signal_new_data_recevied(d1.temp(),d1.humi(),d1.gmtCreate());
+
+    // 检查阈值数据的解析是否正确
+    if (d1.tempThreshold() > 0 && d1.humiThreshold() > 0 && d1.airQThreshold() > 0 && d1.pm25Threshold() > 0) {
+        // 接收到阈值数据
+        emit signal_updateThresholdLabels(d1);
+        qDebug() << "更新阈值数据";
+    } else if (d1.airpress() > 0 && d1.humi()) {
+        // 接收到实时数据
+        emit signal_update_labels(d1);
+        emit signal_new_data_recevied(d1.temp(), d1.humi(), d1.gmtCreate());
+        qDebug() << "更新实时数据";
+    }
 }

@@ -214,7 +214,7 @@
            </widget>
           </item>
           <item row="3" column="0" colspan="2">
-           <widget class="QLabel" name="label_16">
+           <widget class="QLabel" name="label_tempThreshold">
             <property name="frameShape">
              <enum>QFrame::Shape::Box</enum>
             </property>
@@ -339,7 +339,7 @@
            </widget>
           </item>
           <item row="3" column="0" colspan="2">
-           <widget class="QLabel" name="label_18">
+           <widget class="QLabel" name="label_humiThreshold">
             <property name="frameShape">
              <enum>QFrame::Shape::Box</enum>
             </property>
@@ -464,7 +464,7 @@
            </widget>
           </item>
           <item row="3" column="0" colspan="2">
-           <widget class="QLabel" name="label_20">
+           <widget class="QLabel" name="label_pm25Threshold">
             <property name="frameShape">
              <enum>QFrame::Shape::Box</enum>
             </property>
@@ -589,7 +589,7 @@
            </widget>
           </item>
           <item row="3" column="0" colspan="2">
-           <widget class="QLabel" name="label_22">
+           <widget class="QLabel" name="label_pressThreshold">
             <property name="frameShape">
              <enum>QFrame::Shape::Box</enum>
             </property>
@@ -714,7 +714,7 @@
            </widget>
           </item>
           <item row="3" column="0" colspan="2">
-           <widget class="QLabel" name="label_26">
+           <widget class="QLabel" name="label_airQThreshold">
             <property name="frameShape">
              <enum>QFrame::Shape::Box</enum>
             </property>

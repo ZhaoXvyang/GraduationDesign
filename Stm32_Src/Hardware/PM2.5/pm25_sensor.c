@@ -3,21 +3,21 @@
 
 extern ADC_HandleTypeDef hadc2; // ADC 句柄
 
-
-
 /**
  * @brief us级延时函数
  * @param udelay 延迟的时间（微秒）
  */
 void delayXus(uint32_t udelay) {
-    uint32_t startval, tickn, delays, wait;
-    startval = SysTick->VAL;
-    tickn = HAL_GetTick();
-    delays = udelay * 72;
+    uint32_t startval = SysTick->VAL;
+    uint32_t tickn = HAL_GetTick();
+    uint32_t delays = udelay * 72;  // 根据系统时钟频率调整
 
+    // 等待当前 Tick 更新
+    while (HAL_GetTick() == tickn) {}
+
+    uint32_t wait;
     if (delays > startval) {
-        while (HAL_GetTick() == tickn) {} // 等待 Tick 变化
-        wait = 72000 + startval - delays;
+        wait = 72000 + startval - delays; // 计算延时
         while (wait < SysTick->VAL) {} // 等待延时结束
     } else {
         wait = startval - delays;
@@ -39,7 +39,7 @@ void PM25_Init(void) {
 float PM25_ReadDensity(void) {
     uint32_t adcvalue = 0;
     float voltage, density;
-    int samples = 20; // 提高采样次数
+    int samples = 50; // 提高采样次数
     uint32_t sum_adc = 0;
     int valid_samples = 0;
 
@@ -56,7 +56,7 @@ float PM25_ReadDensity(void) {
             valid_samples++;
         }
 
-        delayXus(50);
+        delayXus(50); // 确保每次采样后有足够的延时
     }
 
     HAL_GPIO_WritePin(ILED_GPIO_Port, ILED_Pin, GPIO_PIN_SET);
@@ -78,8 +78,15 @@ float PM25_ReadDensity(void) {
 
     // 平滑滤波，防止波动
     static float last_density = 1.0;
-    density = 0.8 * last_density + 0.2 * density; // 让数值变化更平滑
+    density = 0.9 * last_density + 0.1 * density; // 修改平滑因子
     last_density = density;
+
+    // 限制浓度范围
+    if (density < 0) {
+        density = 0; // 最小值
+    } else if (density > MAX_EXPECTED_DENSITY) {
+        density = MAX_EXPECTED_DENSITY; // 最大值
+    }
 
     return density;
 }

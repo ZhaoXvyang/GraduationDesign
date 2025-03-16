@@ -32,6 +32,11 @@ public:
         m_deviceType(other.m_deviceType),
         m_density(other.m_density),
         m_airpress(other.airpress()),
+        m_tempThreshold(other.m_tempThreshold),
+        m_humiThreshold(other.m_humiThreshold),
+        m_airQThreshold(other.m_airQThreshold),
+        m_pressThreshold(other.m_pressThreshold),
+        m_pm25Threshold(other.m_pm25Threshold),
         m_iotId(other.m_iotId),
         m_requestId(other.m_requestId),
         m_productKey(other.m_productKey),
@@ -46,6 +51,13 @@ public:
     int airque() const {return m_airque;}             // 获取空气质量
     float density() const {return m_density; }    // PM2.5
     int airpress() const {return m_airpress; }    // 气压
+
+    float tempThreshold() const { return m_tempThreshold; }    // 获取温度阈值
+    int humiThreshold() const { return m_humiThreshold; }      // 获取湿度阈值
+    int airQThreshold() const { return m_airQThreshold; }      // 获取空气质量阈值
+    int pressThreshold() const { return m_pressThreshold; }     // 获取气压阈值
+    float pm25Threshold() const { return m_pm25Threshold; }     // 获取 PM2.5 阈值
+
 
     QString version() const { return m_version; }      // 获取版本
     QString deviceType() const { return m_deviceType; } // 获取设备类型
@@ -66,6 +78,12 @@ private:
     float m_density;        // PM2.5
     int   m_airpress;       // 气压
     bool  m_led_connected;  // LED等控制开关
+
+    float m_tempThreshold;    // 温度阈值
+    int m_humiThreshold;      // 湿度阈值
+    int m_airQThreshold;      // 空气质量阈值
+    int m_pressThreshold;     // 气压阈值
+    float m_pm25Threshold;    // PM2.5 阈值
 
     QString m_version;      // 版本
     QString m_deviceType;   // 设备类型

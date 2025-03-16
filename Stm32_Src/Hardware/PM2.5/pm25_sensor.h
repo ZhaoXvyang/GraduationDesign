@@ -11,6 +11,7 @@
 #define GAIN_FACTOR 3.5  // 增加放大倍数
 #define NO_DUST_VOLTAGE 1   // 稍微降低无尘电压基准（原值 1.0）
 
+#define MAX_EXPECTED_DENSITY 500.0 // 假设的最大 PM2.5 浓度值
 
 
 void PM25_Init(void);           // 初始化函数

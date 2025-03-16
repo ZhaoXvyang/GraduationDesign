@@ -40,7 +40,7 @@ void DrawData::initChart()
 
     m_axisY2 = new QValueAxis();
     m_axisY2->setTitleText("湿度 (%)");
-    m_axisY2->setRange(5, 95);
+    m_axisY2->setRange(5, 65);
 
     m_chart->addAxis(m_axisX, Qt::AlignBottom);
     m_chart->addAxis(m_axisY1, Qt::AlignLeft);

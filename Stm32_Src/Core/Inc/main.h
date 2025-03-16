@@ -58,9 +58,11 @@ extern uint16_t airQuality;
 extern uint8_t selectedThresholdIndex;
 extern float tempThreshold;
 extern uint8_t humiThreshold;
-extern int airQThreshold;
+extern uint16_t airQThreshold;
 extern int pressThreshold;
 extern float pm25Threshold;
+extern uint8_t ThresholdsChanged;
+// 发送阈值
 
 // ESP8266接收缓冲区
 
@@ -71,7 +73,7 @@ extern float pm25Threshold;
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void Send_Thresholds(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

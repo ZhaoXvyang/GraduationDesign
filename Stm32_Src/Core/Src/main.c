@@ -52,8 +52,6 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -70,13 +68,13 @@ uint8_t selectedThresholdIndex = 0; // 默认选中第 0 行（温度）
 
 float tempThreshold = 30.0;
 uint8_t humiThreshold = 60;
-int airQThreshold = 200;
+uint16_t airQThreshold = 200;
 int pressThreshold = 1010;
 float pm25Threshold = 75.0;
 
 
 //BMP180Data_T g_tBMP180 = {0};
-
+uint8_t ThresholdsChanged = 1; // 阈值是否被改变
 uint8_t not_init = 1; // 是否初始化完成，初始化完成才显示数据页面
 /* USER CODE END PM */
 
@@ -184,7 +182,7 @@ int main(void)
   BMP180_Init();
   PM25_Init(); // 初始化 PM2.5 传感器
   OLED_Init(); // OLED 初始化
-  HAL_Delay(1000);
+  HAL_Delay(300);
 
   OLED_Clear();
   OLED_ShowString(2, 0, "Init WIFI ...", OLED_8X16);
@@ -196,7 +194,7 @@ int main(void)
   SensorData sensor = {25.5, 60, 88, 99, 0.7}; // 传感器数据
   // -------阿里云MQTT初始化-----------
   HAL_GPIO_WritePin(LED_STATE_GPIO_Port, LED_STATE_Pin, GPIO_PIN_SET); // 状态灯显示
-  HAL_Delay(1000);
+  HAL_Delay(500);
 
  //---------------------
    not_init = 0; // 初始化都完成 进行数据显示
@@ -209,7 +207,7 @@ int main(void)
   {
     readData();
     //Test_ADC_Readings();
-    //CheckThreshold(); // 阈值检测
+    //CheckThreshold(); // 阈值检测开启报警
     // 获取 ADC 值
 
     //printf("温度%.2f",g_tBMP180.fPressure);
@@ -221,10 +219,10 @@ int main(void)
     sensor.airque = airQuality; // 更新空气质量
     sensor.airpress =  (int)(g_tBMP180.fPressure / 100);
     sensor.PM = density;
-
     // 发送数据
     Ali_Yun_Send(&sensor);
-    HAL_Delay(1000);     
+    HAL_Delay(1000);
+    Send_Thresholds();
 
     /* USER CODE END WHILE */
 
@@ -290,6 +288,68 @@ void SystemClock_Config(void)
     sensor.airpress =  (int)(g_tBMP180.fPressure / 100);
     sensor.PM = density;
 */
+void Send_Thresholds(void) {
+    if(!ThresholdsChanged) return;
+    char json_buf[256];  // JSON 数据缓冲区
+    char msg_buf[512];   // AT 指令缓冲区
+
+    // 1. 创建 cJSON 对象
+    cJSON *root = cJSON_CreateObject();
+    if (root == NULL) {
+        printf("Error creating JSON object.\n");
+        return;  // 错误处理
+    }
+
+    cJSON *params = cJSON_CreateObject();
+    if (params == NULL) {
+        cJSON_Delete(root);
+        printf("Error creating JSON params object.\n");
+        return;  // 错误处理
+    }
+    
+    cJSON_AddItemToObject(root, "params", params);
+    
+    // 2. 添加阈值数据
+    cJSON_AddNumberToObject(params, "tempThreshold", tempThreshold); // 温度阈值
+    cJSON_AddNumberToObject(params, "humiThreshold", humiThreshold); // 湿度阈值
+    cJSON_AddNumberToObject(params, "airQThreshold", airQThreshold); // 空气质量阈值
+    cJSON_AddNumberToObject(params, "pressThreshold", pressThreshold); // 压力阈值
+    cJSON_AddNumberToObject(params, "pm25Threshold", pm25Threshold); // PM2.5 阈值
+    
+    // 3. 生成 JSON 字符串
+    char *json_str = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root); // 释放 JSON 对象
+
+    if (json_str == NULL) {
+        printf("Error creating JSON string.\n");
+        return;  // 错误处理
+    }
+
+    // 4. 手动替换逗号 "," 和双引号 "\"" 为 "\,"
+    int i, j = 0;
+    for (i = 0; json_str[i] != '\0'; i++) {
+        if (json_str[i] == ',' || json_str[i] == '\"') {
+            json_buf[j++] = '\\';  // 插入转义字符 "\"
+        }
+        json_buf[j++] = json_str[i];
+    }
+    json_buf[j] = '\0'; // 确保字符串以 null 结尾
+
+    // 5. 组合 AT 指令
+    snprintf(msg_buf, sizeof(msg_buf),
+             "AT+MQTTPUB=0,\"/sys/k282yy0B25v/ESP8266_dev/thing/event/property/post\",\"%s\",0,0\r\n",
+             json_buf);
+
+    // 6. 调试输出 & 发送数据
+    printf("调试 JSON: %s\n", json_buf);
+    printf("开始发送数据: %s\r\n", msg_buf);
+    ESP8266_SendCmd(msg_buf, "OK");
+    ESP8266_Clear();
+
+    // 7. 释放 JSON 字符串
+    free(json_str);
+    ThresholdsChanged = 0;
+}
 
 void Ali_Yun_Send(SensorData *sensor) {
     char json_buf[128];
@@ -430,8 +490,8 @@ void Display_SensorData(void) {
     char buffer[5][20]; // 存储格式化后的字符串
 
     sprintf(buffer[0], "Temp:   %.1f C", temperature);   // 温度（摄氏度）
-    sprintf(buffer[1], "Humi:   %u %%", humidity);       // 湿度（百分比）
-    sprintf(buffer[2], "AirQ:   %d ppm", airQuality);    // 空气质量（ppm）
+    sprintf(buffer[1], "Humi:   %u RH%%", humidity);       // 湿度（百分比）
+    sprintf(buffer[2], "AirQ:   %u ppm", airQuality);    // 空气质量（ppm）
     sprintf(buffer[3], "Press:  %d hPa", (int)(g_tBMP180.fPressure / 100)); // 气压（hPa）
     sprintf(buffer[4], "PM2.5:  %.2f ug/m3", density);   // PM2.5 浓度（ug/m3）
 
@@ -451,8 +511,8 @@ void Display_Thresholds(void) {
     char buffer[5][20]; // 存储格式化后的字符串
 
     sprintf(buffer[0], "Temp Th:  %.1f C", tempThreshold);    // 温度阈值
-    sprintf(buffer[1], "Humi Th:  %u %%", humiThreshold);     // 湿度阈值
-    sprintf(buffer[2], "AirQ Th:  %d ppm", airQThreshold);    // 空气质量阈值
+    sprintf(buffer[1], "Humi Th:  %u RH%%", humiThreshold);     // 湿度阈值
+    sprintf(buffer[2], "AirQ Th:  %u ppm", airQThreshold);    // 空气质量阈值
     sprintf(buffer[3], "Press Th: %d hPa", pressThreshold);   // 气压阈值
     sprintf(buffer[4], "PM2.5 Th: %.2f ug/m3", pm25Threshold); // PM2.5 阈值
 
@@ -478,12 +538,6 @@ void Display_Thresholds(void) {
 
 void showData(void) {
     if (not_init == 1) return;
-    char tempStr[16];  
-    char humiStr[16];  
-    char airQueStr[16];  
-    char airPress[16];
-    char densityStr[16];
-
     OLED_Clear();
 
     switch (currentPage) {
