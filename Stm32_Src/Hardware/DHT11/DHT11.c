@@ -127,7 +127,7 @@ uint8_t DHT11_Read_Byte(void)
 	return dat ; 
 }
  
- 
+
 uint8_t DHT11_Read_Data(float* temp, uint8_t* humi) {
     uint8_t buf[5];
     uint8_t i;

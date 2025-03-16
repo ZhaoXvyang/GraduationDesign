@@ -26,7 +26,7 @@
 #include "tim.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "iwdg.h"
 /* USER CODE END 0 */
 
 TIM_HandleTypeDef htim2;
@@ -204,6 +204,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     // 定时器 3 中断 （传感器数据采集）
     if (htim->Instance == htim3.Instance) {
         timer3OverflowCount++;
+            // 喂狗操作
+        HAL_IWDG_Refresh(&hiwdg); // 重置计数器
         // 每1000次溢出执行传感器数据采集
         if (timer3OverflowCount >= 500) {
             timer3OverflowCount = 0;

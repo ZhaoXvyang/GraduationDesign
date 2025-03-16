@@ -10,8 +10,10 @@ data::Data::Data(QObject* parent)
     m_temp = 0;
     m_humi = 0;
     m_led_connected = 0;
-    m_airque = 0.1;
+    m_airque = 1;
     m_version = 0;
+    m_density = 0.33;
+    m_airpress = 66;
 }
 
 Data::Data(QString& jsonString,QObject* parent)
@@ -60,6 +62,12 @@ void Data::initDataFromQJsonDocument(const QJsonDocument& jsDoc)
         if (params.contains("airque") && params["airque"].isDouble()) {
             m_airque = params["airque"].toDouble();
         }
+        if (params.contains("PM") && params["PM"].isDouble()) {
+            m_density = params["PM"].toDouble();
+        }
+        if (params.contains("airpress") && params["airpress"].isDouble()) {
+            m_airpress = params["airpress"].toDouble();
+        }
         if (obj.contains("version") && obj["version"].isString()) {
             m_version = obj["version"].toString();
         }
@@ -77,7 +85,13 @@ void Data::initDataFromQJsonDocument(const QJsonDocument& jsDoc)
             m_humi = static_cast<int>(items["humi"].toObject()["value"].toDouble());
         }
         if (items.contains("airque") && items["airque"].isObject()) {
-            m_airque = items["airque"].toObject()["value"].toDouble();
+            m_airque = static_cast<int>(items["airque"].toObject()["value"].toDouble());
+        }
+        if (items.contains("PM") && items["PM"].isObject()) {
+            m_density = items["PM"].toObject()["value"].toDouble();
+        }
+        if (items.contains("airpress") && items["airpress"].isObject()) {
+            m_airpress = static_cast<int>(items["airpress"].toObject()["value"].toDouble());
         }
         // 解析根数据
         if (obj.contains("deviceType") && obj["deviceType"].isString()) {
@@ -116,6 +130,8 @@ void Data::printData()
     qDebug() << "led_connected:" << m_led_connected;
     qDebug() << "version:" << m_version;
     qDebug() << "airque:" << m_airque;
+    qDebug() << "airpress:" << airpress();
+    qDebug() << "PM2.5:" << density();
     // 后面的字段被注释掉了，如果需要打印的话可以取消注释
     if(m_deviceType.isEmpty()) return;
     qDebug() << "deviceType:" << m_deviceType;

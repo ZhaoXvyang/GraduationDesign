@@ -21,6 +21,7 @@
 #include "adc.h"
 #include "dma.h"
 #include "i2c.h"
+#include "iwdg.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -95,10 +96,14 @@ volatile OLED_Page_t currentPage = PAGE_SENSOR_DATA; // OLED 页数 变量定义
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+
+// 发送到阿里云的数据模型
 typedef struct {
     float temp;
     uint8_t humi;
     uint16_t airque;
+    uint16_t airpress;
+    float PM;
 } SensorData;
 
 void Ali_Yun_Send(SensorData *sensor);
@@ -109,7 +114,6 @@ void Ali_Yun_Send(SensorData *sensor);
 
 #define SYS_VOLTAGE 5.0
 float adc1_value,adc2_value;
-
 void Test_ADC_Readings(void) {
     uint32_t adc1_value, adc2_value;
     float voltage1, voltage2;
@@ -173,6 +177,7 @@ int main(void)
   MX_ADC1_Init();
   MX_I2C2_Init();
   MX_ADC2_Init();
+  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2); // 开启中断
   HAL_TIM_Base_Start_IT(&htim3); // 开启中断
@@ -188,10 +193,10 @@ int main(void)
   // -------阿里云MQTT初始化-----------
   ESP8266_Init();
   Ali_Yun_Init();
-  SensorData sensor = {25.5, 60, 0.8}; // 传感器数据
+  SensorData sensor = {25.5, 60, 88, 99, 0.7}; // 传感器数据
   // -------阿里云MQTT初始化-----------
   HAL_GPIO_WritePin(LED_STATE_GPIO_Port, LED_STATE_Pin, GPIO_PIN_SET); // 状态灯显示
-  HAL_Delay(3000);
+  HAL_Delay(1000);
 
  //---------------------
    not_init = 0; // 初始化都完成 进行数据显示
@@ -204,21 +209,22 @@ int main(void)
   {
     readData();
     //Test_ADC_Readings();
-    CheckThreshold(); // 阈值检测
+    //CheckThreshold(); // 阈值检测
     // 获取 ADC 值
 
     //printf("温度%.2f",g_tBMP180.fPressure);
 
     // 更新传感器数据
-    sensor.temp = temperature; // 更新温度
+    // 更新温度并格式化，只保留一位小数
+    sensor.temp = temperature; // 四舍五入到一位小数
     sensor.humi = humidity;     // 更新湿度
     sensor.airque = airQuality; // 更新空气质量
+    sensor.airpress =  (int)(g_tBMP180.fPressure / 100);
+    sensor.PM = density;
 
     // 发送数据
     Ali_Yun_Send(&sensor);
-
-    HAL_Delay(1000);
-      
+    HAL_Delay(1000);     
 
     /* USER CODE END WHILE */
 
@@ -240,10 +246,11 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
@@ -276,17 +283,64 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 
 //阿里云数据上传
+/*
+    sensor.temp = temperature; // 四舍五入到一位小数
+    sensor.humi = humidity;     // 更新湿度
+    sensor.airque = airQuality; // 更新空气质量
+    sensor.airpress =  (int)(g_tBMP180.fPressure / 100);
+    sensor.PM = density;
+*/
 
 void Ali_Yun_Send(SensorData *sensor) {
-    char msg_buf[1024];
+    char json_buf[128];
+    char msg_buf[256];
+    char tempStr[10];
+    char PMStr[10];
 
-    // 手动拼接字符串，包含空气质量数据
-    sprintf(msg_buf, "AT+MQTTPUB=0,\"/sys/k282yy0B25v/ESP8266_dev/thing/event/property/post\",\"{params:{\\\"temp\\\":%.1f\\,\\\"humi\\\":%d\\,\\\"airque\\\":%d}}\",0,0\r\n", sensor->temp, sensor->humi, sensor->airque);
+    // 1. 格式化温度，保留一位小数
+    snprintf(tempStr, sizeof(tempStr), "%.1f", sensor->temp);
+    // 1. 格式化PM，保留两位小数
+    snprintf(PMStr, sizeof(PMStr), "%.2f", sensor->PM);
+    
+    // 2. 创建 cJSON 对象
+    cJSON *root = cJSON_CreateObject();
+    cJSON *params = cJSON_CreateObject();
+    cJSON_AddItemToObject(root, "params", params);
+    
+    // 使用格式化后的浮点数值而非字符串
+    cJSON_AddNumberToObject(params, "temp", atof(tempStr)); // 转换为浮点数
+    cJSON_AddNumberToObject(params, "humi", sensor->humi);
+    cJSON_AddNumberToObject(params, "airque", sensor->airque);
+    cJSON_AddNumberToObject(params, "airpress", sensor->airpress);
+    cJSON_AddNumberToObject(params, "PM", atof(PMStr));
+    
+    // 3. 生成 JSON 字符串
+    char *json_str = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root); // 释放 JSON 对象
 
-    // 打印和发送数据
+    // 4. 手动替换逗号 "," 和双引号 "\"" 为 "\,"
+    int i, j = 0;
+    for (i = 0; json_str[i] != '\0'; i++) {
+        if (json_str[i] == ',' || json_str[i] == '\"') {
+            json_buf[j++] = '\\';  // 插入转义字符 "\"
+        }
+        json_buf[j++] = json_str[i];
+    }
+    json_buf[j] = '\0'; // 确保字符串以 null 结尾
+
+    // 5. 组合 AT 指令
+    snprintf(msg_buf, sizeof(msg_buf),
+             "AT+MQTTPUB=0,\"/sys/k282yy0B25v/ESP8266_dev/thing/event/property/post\",\"%s\",0,0\r\n",
+             json_buf);
+
+    // 6. 调试输出 & 发送数据
+    printf("调试 JSON: %s\n", json_buf);
     printf("开始发送数据: %s\r\n", msg_buf);
     ESP8266_SendCmd(msg_buf, "OK");
     ESP8266_Clear();
+
+    // 7. 释放 JSON 字符串
+    free(json_str);
 }
 
 //uint8_t cjson_err_num = 0;  // cJSON 解析错误的次数，用于判断解析失败的次数，避免无限解析失败

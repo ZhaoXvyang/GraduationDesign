@@ -39,6 +39,8 @@ void Widget::setConnectionStatus(const QString &status)
 
 void Widget::slots_updateLabels(data::Data labelsData)
 {
+    labelsData.printData();
+
     QString devName = QString("远端设备:%1").arg(labelsData.deviceName());
     ui->label_DEVNAME->setText(devName);
     // 将 float 转换为 QString，并格式化为 "00.00" 样式
@@ -47,9 +49,16 @@ void Widget::slots_updateLabels(data::Data labelsData)
     // 格式化湿度（假设湿度是整数，不带小数）
     QString humiString = QString("%1 %").arg(labelsData.humi());
     ui->label_data_humi_show->setText(humiString);
-    // 酒精浓度
-    QString airqueString = QString("%1 ppm").arg(labelsData.airque(), 0, 'f', 2);
+    // 空气质量
+    QString airqueString = QString("%1 ppm").arg(labelsData.airque());
     ui->label_data_air_show->setText(airqueString);
+    // 气压
+    qDebug()<<"当前气压:labelsData.airpress()"<<labelsData.airpress();
+    QString airPressString = QString("%1 hpa").arg(labelsData.airpress());
+    ui->label_data_airpress_show->setText(airPressString);
+    // PM2.5
+    QString PMString = QString("%1 ug/m³").arg(QString::number(labelsData.density(), 'f', 2));
+    ui->label_data_PM_show->setText(PMString);
 
 }
 
