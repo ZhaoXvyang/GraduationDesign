@@ -183,7 +183,7 @@
              </font>
             </property>
             <property name="text">
-             <string>32.30℃</string>
+             <string>NULL</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
@@ -191,7 +191,7 @@
            </widget>
           </item>
           <item row="4" column="0">
-           <widget class="QLineEdit" name="lineEdit"/>
+           <widget class="QLineEdit" name="lineEdit_tempThresholed"/>
           </item>
           <item row="1" column="0" colspan="2">
            <widget class="Line" name="line_2">
@@ -230,9 +230,9 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="pushButton_set_tempThresholed">
             <property name="text">
-             <string>PushButton</string>
+             <string>下发阈值</string>
             </property>
            </widget>
           </item>
@@ -320,7 +320,7 @@
            </widget>
           </item>
           <item row="4" column="0">
-           <widget class="QLineEdit" name="lineEdit_3"/>
+           <widget class="QLineEdit" name="lineEdit_humiThresholed"/>
           </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_data_humi_show">
@@ -331,7 +331,7 @@
              </font>
             </property>
             <property name="text">
-             <string>66 %</string>
+             <string>NULL</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
@@ -355,9 +355,9 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="pushButton_set_humiThresholed">
             <property name="text">
-             <string>PushButton</string>
+             <string>下发阈值</string>
             </property>
            </widget>
           </item>
@@ -404,7 +404,7 @@
              </font>
             </property>
             <property name="text">
-             <string>32.30℃</string>
+             <string>NULL</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
@@ -454,7 +454,7 @@
            </widget>
           </item>
           <item row="4" column="0">
-           <widget class="QLineEdit" name="lineEdit_4"/>
+           <widget class="QLineEdit" name="lineEdit_PMThresholed"/>
           </item>
           <item row="1" column="0" colspan="2">
            <widget class="Line" name="line_4">
@@ -480,9 +480,9 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QPushButton" name="pushButton_3">
+           <widget class="QPushButton" name="pushButton_set_PMThresholed">
             <property name="text">
-             <string>PushButton</string>
+             <string>下发阈值</string>
             </property>
            </widget>
           </item>
@@ -537,7 +537,7 @@
            </widget>
           </item>
           <item row="4" column="0">
-           <widget class="QLineEdit" name="lineEdit_5"/>
+           <widget class="QLineEdit" name="lineEdit_pressThresholed"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_33">
@@ -561,7 +561,7 @@
              </font>
             </property>
             <property name="text">
-             <string>32.30℃</string>
+             <string>NULL</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
@@ -605,9 +605,9 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QPushButton" name="pushButton_4">
+           <widget class="QPushButton" name="pushButton_set_pressThresholed">
             <property name="text">
-             <string>PushButton</string>
+             <string>下发阈值</string>
             </property>
            </widget>
           </item>
@@ -670,7 +670,7 @@
              </font>
             </property>
             <property name="text">
-             <string>0.07ppm</string>
+             <string>NULL</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
@@ -691,7 +691,7 @@
            </widget>
           </item>
           <item row="4" column="0">
-           <widget class="QLineEdit" name="lineEdit_7"/>
+           <widget class="QLineEdit" name="lineEdit_airQThresholed"/>
           </item>
           <item row="2" column="1">
            <widget class="QLabel" name="label_38">
@@ -730,9 +730,9 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QPushButton" name="pushButton_5">
+           <widget class="QPushButton" name="pushButton_set_airQThresholed">
             <property name="text">
-             <string>PushButton</string>
+             <string>下发阈值</string>
             </property>
            </widget>
           </item>
@@ -786,6 +786,12 @@
       <widget class="QPushButton" name="pushButton_connect">
        <property name="text">
         <string>连接服务器</string>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
        </property>
       </widget>
      </item>

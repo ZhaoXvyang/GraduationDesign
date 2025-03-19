@@ -197,7 +197,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
             timer2OverflowCount = 0;
             // 这里可以调用 OLED 刷新函数
             showData();
-
         }
     }
 

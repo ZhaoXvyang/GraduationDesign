@@ -50,7 +50,6 @@ uint8_t ESP8266_SendCmd(uint8_t *cmd, uint8_t *res)
     
     // ·¢ËÍATÃüÁî
     ESP8266_SendString(cmd, strlen((const char *)cmd));
-    
     // µÈ´ıÏìÓ¦
     while (num--) {
         if (strstr((const char *)esp_buff, (const char *)res) != NULL) {

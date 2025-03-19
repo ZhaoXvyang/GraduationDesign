@@ -128,4 +128,55 @@ void Widget::on_pushButton_connect_clicked()
     drawData->startUpdating();
 }
 
+// 下发温度阈值
+void Widget::on_pushButton_set_tempThresholed_clicked()
+{
+    // 获取用户输入的温度阈值
+    QString inputText = ui->lineEdit_tempThresholed->text();
+    bool ok;
+    double tempThreshold = inputText.toDouble(&ok);
+
+    // 检查输入是否有效
+    if (!ok) {
+        qDebug() << "输入的温度阈值无效";
+        return;
+    }
+
+    // 构造 JSON
+    QString json = MQTTJsonHelper::constructThresholdJson("tempThreshold", tempThreshold);
+    qDebug() << "构造的 JSON：" << json;
+
+    // 创建一个 QTimer
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, [this, json, timer]() {
+        // 发送 JSON
+        client->publishJson(json);
+        qDebug() << "发送 JSON：" << json;
+    });
+
+    // 设置定时器每隔 500 毫秒发送一次
+    timer->setInterval(500);
+    timer->start();
+
+    // 创建另一个 QTimer，用于停止发送
+    QTimer *stopTimer = new QTimer(this);
+    connect(stopTimer, &QTimer::timeout, [timer, stopTimer]() {
+        // 停止发送并删除定时器
+        timer->stop();
+        timer->deleteLater();
+        stopTimer->stop();
+        stopTimer->deleteLater();
+        qDebug() << "停止发送 JSON。";
+    });
+
+    // 设置停止定时器为 2000 毫秒（2 秒）
+    stopTimer->setSingleShot(true);
+    stopTimer->start(2000);
+}
+
+// 下发湿度阈值
+void Widget::on_pushButton_set_humiThresholed_clicked()
+{
+
+}
 

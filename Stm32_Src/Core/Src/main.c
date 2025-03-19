@@ -24,7 +24,9 @@
 #include "iwdg.h"
 #include "tim.h"
 #include "usart.h"
+#include "usb_device.h"
 #include "gpio.h"
+#include "usbd_cdc_if.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -136,6 +138,7 @@ void Test_ADC_Readings(void) {
     printf("ADC1 Value: %lu, Voltage: %.3f V\n", adc1_value, voltage1);
     printf("ADC2 Value: %lu, Voltage: %.3f V\n", adc2_value, voltage2);
 }
+
 /* USER CODE END 0 */
 
 /**
@@ -176,6 +179,7 @@ int main(void)
   MX_I2C2_Init();
   MX_ADC2_Init();
   MX_IWDG_Init();
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2); // 开启中断
   HAL_TIM_Base_Start_IT(&htim3); // 开启中断
@@ -191,9 +195,10 @@ int main(void)
   // -------阿里云MQTT初始化-----------
   ESP8266_Init();
   Ali_Yun_Init();
-  SensorData sensor = {25.5, 60, 88, 99, 0.7}; // 传感器数据
+  SensorData sensor = {25.5, 20, 88, 99, 0.7}; // 传感器数据
   // -------阿里云MQTT初始化-----------
   HAL_GPIO_WritePin(LED_STATE_GPIO_Port, LED_STATE_Pin, GPIO_PIN_SET); // 状态灯显示
+  HAL_GPIO_WritePin(LED_POWER_GPIO_Port, LED_POWER_Pin, GPIO_PIN_SET); // 传输指示显示
   HAL_Delay(500);
 
  //---------------------
@@ -205,24 +210,27 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    readData();
-    //Test_ADC_Readings();
-    //CheckThreshold(); // 阈值检测开启报警
-    // 获取 ADC 值
-
-    //printf("温度%.2f",g_tBMP180.fPressure);
+    HAL_GPIO_TogglePin(LED_POWER_GPIO_Port, LED_POWER_Pin);
+    readData();  // 读取传感器数据
+    CheckThreshold(); // 阈值检测开启报警
 
     // 更新传感器数据
-    // 更新温度并格式化，只保留一位小数
-    sensor.temp = temperature; // 四舍五入到一位小数
-    sensor.humi = humidity;     // 更新湿度
-    sensor.airque = airQuality; // 更新空气质量
-    sensor.airpress =  (int)(g_tBMP180.fPressure / 100);
+    sensor.temp = temperature; 
+    sensor.humi = humidity;     
+    sensor.airque = airQuality; 
+    sensor.airpress = (int)(g_tBMP180.fPressure / 100);
     sensor.PM = density;
-    // 发送数据
+       // 检查新数据标志位
+    if (newDataFlag)
+    {
+        // 调用解析函数
+        Ali_Yun_GetRCV();
+        newDataFlag = 0;  // 重置标志位
+    }
+    // 发送传感器数据到云端
     Ali_Yun_Send(&sensor);
-    HAL_Delay(1000);
-    Send_Thresholds();
+    HAL_Delay(1000);  // 控制发送频率
+    Send_Thresholds(); // 发送当前阈值设置
 
     /* USER CODE END WHILE */
 
@@ -270,8 +278,9 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC|RCC_PERIPHCLK_USB;
   PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
+  PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -341,8 +350,8 @@ void Send_Thresholds(void) {
              json_buf);
 
     // 6. 调试输出 & 发送数据
-    printf("调试 JSON: %s\n", json_buf);
-    printf("开始发送数据: %s\r\n", msg_buf);
+    //printf("调试 JSON: %s\n", json_buf);
+    //printf("开始发送数据: %s\r\n", msg_buf);
     ESP8266_SendCmd(msg_buf, "OK");
     ESP8266_Clear();
 
@@ -394,8 +403,8 @@ void Ali_Yun_Send(SensorData *sensor) {
              json_buf);
 
     // 6. 调试输出 & 发送数据
-    printf("调试 JSON: %s\n", json_buf);
-    printf("开始发送数据: %s\r\n", msg_buf);
+    //printf("调试 JSON: %s\n", json_buf);
+    //printf("开始发送数据: %s\r\n", msg_buf);
     ESP8266_SendCmd(msg_buf, "OK");
     ESP8266_Clear();
 
@@ -403,9 +412,94 @@ void Ali_Yun_Send(SensorData *sensor) {
     free(json_str);
 }
 
-//uint8_t cjson_err_num = 0;  // cJSON 解析错误的次数，用于判断解析失败的次数，避免无限解析失败
+/// 定义最大尝试次数
+#define MAX_RETRY_COUNT 3
 
-// 接收并解析数据的函数
+// MQTT 数据解析函数
+void Ali_Yun_GetRCV(void)
+{
+    cJSON *cjson = NULL;
+    int num;
+    char topic_buff[256];
+    char recv_buffer[ESPBUFF_MAX_SIZE];
+    char *ptr_recv = strstr((const char *)esp_buff, "+MQTTSUBRECV");
+
+    if (ptr_recv != NULL)  // 存在接收到的 MQTT 订阅消息
+    {
+        memset(topic_buff, 0, sizeof(topic_buff));
+        sscanf((char *)esp_buff, "+MQTTSUBRECV:0,%[^,],%d,%s", topic_buff, &num, recv_buffer);
+
+        if (strstr(topic_buff, ALI_TOPIC_SET))  // 确认接收到的主题是指定主题
+        {
+            printf("========================数据解析开始===========================\r\n");
+            printf("接收数据成功，开始解析  %s\r\n", recv_buffer);
+
+            int retry_count = 0;
+            while (retry_count < MAX_RETRY_COUNT)
+            {
+                cjson = cJSON_Parse(recv_buffer);
+                if (cjson != NULL)  // 解析成功
+                {
+                    // 获取 items 对象
+                    cJSON *items = cJSON_GetObjectItem(cjson, "items");
+                    if (items != NULL)  // 如果找到 items 对象
+                    {
+                        // 解析温度阈值
+                        cJSON *tempThresholdItem = cJSON_GetObjectItem(items, "tempThreshold");
+                        if (tempThresholdItem != NULL)
+                        {
+                            cJSON *value = cJSON_GetObjectItem(tempThresholdItem, "value");
+                            if (value != NULL && cJSON_IsNumber(value))
+                            {
+                                tempThreshold = (float)value->valuedouble;
+                                printf("更新成功 tempThreshold = %f\r\n", tempThreshold);
+                            }
+                        }
+
+                        // 解析湿度阈值
+                        cJSON *humiThresholdItem = cJSON_GetObjectItem(items, "humiThreshold");
+                        if (humiThresholdItem != NULL)
+                        {
+                            cJSON *value = cJSON_GetObjectItem(humiThresholdItem, "value");
+                            if (value != NULL && cJSON_IsNumber(value))
+                            {
+                                humiThreshold = (uint8_t)value->valueint;
+                                printf("更新成功 humiThreshold = %d\r\n", humiThreshold);
+                            }
+                        }
+
+                        // 解析其他阈值
+                        // ...
+
+                        break;  // 成功解析，跳出重试循环
+                    }
+                    else
+                    {
+                        printf("未找到 items 数据，重试中...\r\n");
+                    }
+                }
+                else
+                {
+                    printf("cjson 解析错误，重试中...\r\n");
+                }
+
+                retry_count++;
+                // 可选择在每次重试之间增加延迟
+                HAL_Delay(100);  // 等待一段时间再重试
+            }
+
+            // 如果到达最大尝试次数，打印提示
+            if (retry_count >= MAX_RETRY_COUNT)
+            {
+                printf("达到最大重试次数，解析失败。\r\n");
+            }
+
+            ESP8266_Clear();   // 清空接收缓存
+            cJSON_Delete(cjson);  // 释放 cJSON 对象
+            printf("========================数据解析结束===========================\r\n");
+        }
+    }
+}
 
 /*
 void Ali_Yun_GetRCV(void)

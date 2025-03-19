@@ -39,6 +39,10 @@ private slots:
 
     void on_pushButton_disconnect_clicked();
 
+    void on_pushButton_set_tempThresholed_clicked();
+
+    void on_pushButton_set_humiThresholed_clicked();
+
 private:
     Ui::Widget *ui;
 

@@ -27,7 +27,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
-
+volatile uint8_t newDataFlag = 0;  // 标志位，指示新数据可供处理
 /* USER CODE END TD */
 
 /* Private define ------------------------------------------------------------*/
@@ -56,6 +56,7 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern PCD_HandleTypeDef hpcd_USB_FS;
 extern DMA_HandleTypeDef hdma_adc1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
@@ -233,6 +234,20 @@ void DMA1_Channel6_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles USB low priority or CAN RX0 interrupts.
+  */
+void USB_LP_CAN1_RX0_IRQHandler(void)
+{
+  /* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 0 */
+
+  /* USER CODE END USB_LP_CAN1_RX0_IRQn 0 */
+  HAL_PCD_IRQHandler(&hpcd_USB_FS);
+  /* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 1 */
+
+  /* USER CODE END USB_LP_CAN1_RX0_IRQn 1 */
+}
+
+/**
   * @brief This function handles EXTI line[9:5] interrupts.
   */
 void EXTI9_5_IRQHandler(void)
@@ -300,12 +315,21 @@ void USART2_IRQHandler(void)
   /* USER CODE BEGIN USART2_IRQn 1 */
   if(__HAL_UART_GET_FLAG(&huart2,UART_FLAG_IDLE) != RESET)    // 空闲中断的标志位
    {
-    HAL_UART_DMAStop(&huart2);                               //停止接收
-    esp_cnt = ESPBUFF_MAX_SIZE - __HAL_DMA_GET_COUNTER(&hdma_usart2_rx);    // 计算接收的数据长度
-    HAL_UART_Transmit(&huart1,esp_buff,esp_cnt,1000);
-    //	  printf("rec = %s\r\n",esp_buff);
-    HAL_UART_Receive_DMA(&huart2,esp_buff,ESPBUFF_MAX_SIZE);         // 开启DMA继续接收
-    __HAL_UART_CLEAR_IDLEFLAG(&huart2);
+        HAL_UART_DMAStop(&huart2);  // 停止 DMA 接收
+        
+        // 计算接收的数据长度
+        esp_cnt = ESPBUFF_MAX_SIZE - __HAL_DMA_GET_COUNTER(&hdma_usart2_rx);
+        
+        // 可选：将接收到的数据通过串口发送到其他地方（调试用）
+        HAL_UART_Transmit(&huart1, esp_buff, esp_cnt, 1000);
+        // 设置标志位，指示有新数据
+        newDataFlag = 1;
+
+        // 重新开启 DMA 接收
+        HAL_UART_Receive_DMA(&huart2, esp_buff, ESPBUFF_MAX_SIZE);
+        
+        // 清除空闲中断标志
+        __HAL_UART_CLEAR_IDLEFLAG(&huart2);
    }
   /* USER CODE END USART2_IRQn 1 */
 }

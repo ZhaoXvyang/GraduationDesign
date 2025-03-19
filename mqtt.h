@@ -34,7 +34,7 @@ public:
     void publish();
     void disconnected();
     bool isConnected();
-
+    void publishJson(const QString &jsonData); // 发布json数据
 signals:
     void signal_new_data_recevied(double temp,double humi,qint64 timestamp);
     void signal_update_labels(data::Data label_Data);

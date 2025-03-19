@@ -223,11 +223,21 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 /* USER CODE BEGIN 1 */
 
 //重定义fputc函数
+#include "usbd_cdc_if.h"  // 需要包含 USB CDC 相关的头文件
+
+/* // usb通信
+int fputc(int ch, FILE *f)
+{
+    uint8_t temp = (uint8_t) ch;
+    while (CDC_Transmit_FS(&temp, 1) == USBD_BUSY); // 等待 USB 传输完成
+    return ch;
+}
+*/
+
 int fputc(int ch, FILE *f)
 {
     while((USART1->SR & 0X40) == 0); //循环发送,直到发送完毕
     USART1->DR = (uint8_t) ch;
     return ch;
 }
-
 /* USER CODE END 1 */

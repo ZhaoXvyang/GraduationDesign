@@ -33,6 +33,21 @@ public:
                                  .arg(osArch);
         label->setText(deviceInfo);
     }
-};
 
+};
+class MQTTJsonHelper
+{
+public:
+    template <typename T>
+    static QString constructThresholdJson(const QString &key, T value)
+    {
+        QJsonObject root;
+        QJsonObject params;
+
+        params.insert(key, QJsonValue::fromVariant(value));
+        root.insert("params", params);
+
+        return QString::fromUtf8(QJsonDocument(root).toJson(QJsonDocument::Compact));
+    }
+};
 #endif // MYTOOLS_H
