@@ -26,7 +26,6 @@
 #include "usart.h"
 #include "usb_device.h"
 #include "gpio.h"
-#include "usbd_cdc_if.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -203,7 +202,7 @@ int main(void)
 
  //---------------------
    not_init = 0; // 初始化都完成 进行数据显示
-
+   ThresholdsChanged = 1;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -431,16 +430,12 @@ void Ali_Yun_GetRCV(void)
 
         if (strstr(topic_buff, ALI_TOPIC_SET))  // 确认接收到的主题是指定主题
         {
-            printf("========================数据解析开始===========================\r\n");
-            printf("接收数据成功，开始解析  %s\r\n", recv_buffer);
-
             int retry_count = 0;
             while (retry_count < MAX_RETRY_COUNT)
             {
                 cjson = cJSON_Parse(recv_buffer);
                 if (cjson != NULL)  // 解析成功
                 {
-                    // 获取 items 对象
                     cJSON *items = cJSON_GetObjectItem(cjson, "items");
                     if (items != NULL)  // 如果找到 items 对象
                     {
@@ -452,7 +447,6 @@ void Ali_Yun_GetRCV(void)
                             if (value != NULL && cJSON_IsNumber(value))
                             {
                                 tempThreshold = (float)value->valuedouble;
-                                printf("更新成功 tempThreshold = %f\r\n", tempThreshold);
                             }
                         }
 
@@ -464,42 +458,56 @@ void Ali_Yun_GetRCV(void)
                             if (value != NULL && cJSON_IsNumber(value))
                             {
                                 humiThreshold = (uint8_t)value->valueint;
-                                printf("更新成功 humiThreshold = %d\r\n", humiThreshold);
                             }
                         }
 
-                        // 解析其他阈值
-                        // ...
+                        // 解析空气质量阈值
+                        cJSON *airQThresholdItem = cJSON_GetObjectItem(items, "airQThreshold");
+                        if (airQThresholdItem != NULL)
+                        {
+                            cJSON *value = cJSON_GetObjectItem(airQThresholdItem, "value");
+                            if (value != NULL && cJSON_IsNumber(value))
+                            {
+                                airQThreshold = (uint16_t)value->valueint;
+                            }
+                        }
 
+                        // 解析气压阈值
+                        cJSON *pressThresholdItem = cJSON_GetObjectItem(items, "pressThreshold");
+                        if (pressThresholdItem != NULL)
+                        {
+                            cJSON *value = cJSON_GetObjectItem(pressThresholdItem, "value");
+                            if (value != NULL && cJSON_IsNumber(value))
+                            {
+                                pressThreshold = (int)value->valueint;
+                            }
+                        }
+
+                        // 解析 PM2.5 阈值
+                        cJSON *pm25ThresholdItem = cJSON_GetObjectItem(items, "pm25Threshold");
+                        if (pm25ThresholdItem != NULL)
+                        {
+                            cJSON *value = cJSON_GetObjectItem(pm25ThresholdItem, "value");
+                            if (value != NULL && cJSON_IsNumber(value))
+                            {
+                                pm25Threshold = (float)value->valuedouble;
+                            }
+                        }
+                        
                         break;  // 成功解析，跳出重试循环
                     }
-                    else
-                    {
-                        printf("未找到 items 数据，重试中...\r\n");
-                    }
                 }
-                else
-                {
-                    printf("cjson 解析错误，重试中...\r\n");
-                }
-
                 retry_count++;
-                // 可选择在每次重试之间增加延迟
                 HAL_Delay(100);  // 等待一段时间再重试
-            }
-
-            // 如果到达最大尝试次数，打印提示
-            if (retry_count >= MAX_RETRY_COUNT)
-            {
-                printf("达到最大重试次数，解析失败。\r\n");
             }
 
             ESP8266_Clear();   // 清空接收缓存
             cJSON_Delete(cjson);  // 释放 cJSON 对象
-            printf("========================数据解析结束===========================\r\n");
+            ThresholdsChanged = 1;
         }
     }
 }
+
 
 /*
 void Ali_Yun_GetRCV(void)

@@ -1,5 +1,6 @@
 #include "beep.h"
 #include "main.h"
+#include "BMP180.h"
 
 // 定义全局变量
 uint32_t beepStartTime = 0;
@@ -11,7 +12,7 @@ void CheckThreshold(void) {
     if (temperature > tempThreshold || 
         humidity > humiThreshold || 
         airQuality > airQThreshold || 
-        density > pressThreshold || 
+        (int)(g_tBMP180.fPressure / 100) > pressThreshold || 
         density > pm25Threshold) {
         warring = 1;  // 触发报警
     } else {

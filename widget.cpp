@@ -36,27 +36,114 @@ void Widget::setConnectionStatus(const QString &status)
     ui->label_connectedStatus->setText("连接状态：" + status);  // 设置连接状态文本
 }
 
+// 更新温度状态文本
+void Widget::updateTempStatus(float temp)
+{
+    QString tempStatus;
+    if (temp < 0) {
+        tempStatus = "寒冷 ❄️";
+    } else if (temp < 10) {
+        tempStatus = "较冷 🌬️";
+    } else if (temp < 25) {
+        tempStatus = "舒适 🙂";
+    } else if (temp < 35) {
+        tempStatus = "炎热 🔥";
+    } else {
+        tempStatus = "酷热 🥵";
+    }
+    ui->label_temp_status->setText(tempStatus);
+}
 
+// 更新湿度状态文本
+void Widget::updateHumidityStatus(int humidity)
+{
+    QString humidityStatus;
+    if (humidity < 30) {
+        humidityStatus = "干燥 💨";
+    } else if (humidity < 60) {
+        humidityStatus = "适中 ✅";
+    } else {
+        humidityStatus = "潮湿 💦";
+    }
+    ui->label_humi_status->setText(humidityStatus);
+}
+
+// 更新空气质量状态文本
+void Widget::updateAirQualityStatus(int airQuality)
+{
+    QString airQualityStatus;
+    if (airQuality < 50) {
+        airQualityStatus = "优 ✅";
+    } else if (airQuality < 100) {
+        airQualityStatus = "良 🙂";
+    } else if (airQuality < 150) {
+        airQualityStatus = "轻度污染 😷";
+    } else if (airQuality < 200) {
+        airQualityStatus = "中度污染 😨";
+    } else {
+        airQualityStatus = "重度污染 ☠️";
+    }
+    ui->label_air_status->setText(airQualityStatus);
+}
+
+// 更新气压状态文本
+void Widget::updatePressureStatus(float pressure)
+{
+    QString pressureStatus;
+    if (pressure < 980) {
+        pressureStatus = "低气压 ⬇️";
+    } else if (pressure < 1020) {
+        pressureStatus = "正常 🌍";
+    } else {
+        pressureStatus = "高气压 ⬆️";
+    }
+    ui->label_airpress_status->setText(pressureStatus);
+}
+
+// 更新 PM2.5 状态文本
+void Widget::updatePMStatus(float pm)
+{
+    QString PMStatus;
+    if (pm < 35) {
+        PMStatus = "优 ✅";
+    } else if (pm < 75) {
+        PMStatus = "良 🙂";
+    } else if (pm < 115) {
+        PMStatus = "轻度污染 😷";
+    } else if (pm < 150) {
+        PMStatus = "中度污染 😨";
+    } else {
+        PMStatus = "重度污染 ☠️";
+    }
+    ui->label_PM_status->setText(PMStatus);
+}
+
+// 更新所有状态显示
+void Widget::updateAllStatuses(const data::Data &labelsData)
+{
+    updateTempStatus(labelsData.temp());
+    updateHumidityStatus(labelsData.humi());
+    updateAirQualityStatus(labelsData.airque());
+    updatePressureStatus(labelsData.airpress());
+    updatePMStatus(labelsData.density());
+}
+
+// 主更新函数
 void Widget::slots_updateLabels(data::Data labelsData)
 {
-    QString devName = QString("远端设备:%1").arg(labelsData.deviceName());
-    ui->label_DEVNAME->setText(devName);
-    // 将 float 转换为 QString，并格式化为 "00.00" 样式
-    QString tempString = QString("%1 %2").arg(labelsData.temp(), 5, 'f', 2, QChar('0')).arg("℃");
-    ui->label_data_temp_show->setText(tempString);
-    // 格式化湿度（假设湿度是整数，不带小数）
-    QString humiString = QString("%1 RH%").arg(labelsData.humi());
-    ui->label_data_humi_show->setText(humiString);
-    // 空气质量
-    QString airqueString = QString("%1 ppm").arg(labelsData.airque());
-    ui->label_data_air_show->setText(airqueString);
-    // 气压
-    QString airPressString = QString("%1 hpa").arg(labelsData.airpress());
-    ui->label_data_airpress_show->setText(airPressString);
-    // PM2.5
-    QString PMString = QString("%1 ug/m³").arg(QString::number(labelsData.density(), 'f', 2));
-    ui->label_data_PM_show->setText(PMString);
+    ui->label_DEVNAME->setText(QString("远端设备:%1").arg(labelsData.deviceName()));
+
+    // 更新数据数值
+    ui->label_data_temp_show->setText(QString("%1 ℃").arg(labelsData.temp(), 5, 'f', 2, QChar('0')));
+    ui->label_data_humi_show->setText(QString("%1 RH%").arg(labelsData.humi()));
+    ui->label_data_air_show->setText(QString("%1 ppm").arg(labelsData.airque()));
+    ui->label_data_airpress_show->setText(QString("%1 hpa").arg(labelsData.airpress()));
+    ui->label_data_PM_show->setText(QString("%1 ug/m³").arg(QString::number(labelsData.density(), 'f', 2)));
+
+    // 更新状态文本
+    updateAllStatuses(labelsData);
 }
+
 
 void Widget::slots_updateThresholdLabels(data::Data labelsData)
 {
@@ -128,40 +215,27 @@ void Widget::on_pushButton_connect_clicked()
     drawData->startUpdating();
 }
 
-// 下发温度阈值
-void Widget::on_pushButton_set_tempThresholed_clicked()
+// 通用的阈值发送方法（模板版本）
+template <typename T>
+void Widget::sendThreshold(const QString &key, T value)
 {
-    // 获取用户输入的温度阈值
-    QString inputText = ui->lineEdit_tempThresholed->text();
-    bool ok;
-    double tempThreshold = inputText.toDouble(&ok);
-
-    // 检查输入是否有效
-    if (!ok) {
-        qDebug() << "输入的温度阈值无效";
-        return;
-    }
-
     // 构造 JSON
-    QString json = MQTTJsonHelper::constructThresholdJson("tempThreshold", tempThreshold);
+    QString json = MQTTJsonHelper::constructThresholdJson(key, value);
     qDebug() << "构造的 JSON：" << json;
 
-    // 创建一个 QTimer
+    // 创建 QTimer 定时发送
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, [this, json, timer]() {
-        // 发送 JSON
         client->publishJson(json);
         qDebug() << "发送 JSON：" << json;
     });
 
-    // 设置定时器每隔 500 毫秒发送一次
     timer->setInterval(500);
     timer->start();
 
-    // 创建另一个 QTimer，用于停止发送
+    // 创建 QTimer 用于停止发送
     QTimer *stopTimer = new QTimer(this);
     connect(stopTimer, &QTimer::timeout, [timer, stopTimer]() {
-        // 停止发送并删除定时器
         timer->stop();
         timer->deleteLater();
         stopTimer->stop();
@@ -169,14 +243,85 @@ void Widget::on_pushButton_set_tempThresholed_clicked()
         qDebug() << "停止发送 JSON。";
     });
 
-    // 设置停止定时器为 2000 毫秒（2 秒）
     stopTimer->setSingleShot(true);
     stopTimer->start(2000);
 }
 
-// 下发湿度阈值
+// 处理温度阈值的按钮点击事件
+void Widget::on_pushButton_set_tempThresholed_clicked()
+{
+    QString inputText = ui->lineEdit_tempThresholed->text();
+    bool ok;
+    double tempThreshold = inputText.toDouble(&ok);
+
+    if (!ok) {
+        qDebug() << "输入的温度阈值无效";
+        return;
+    }
+
+    sendThreshold("tempThreshold", tempThreshold);
+}
+
+// 处理湿度阈值的按钮点击事件
 void Widget::on_pushButton_set_humiThresholed_clicked()
 {
+    QString inputText = ui->lineEdit_humiThresholed->text();
+    bool ok;
+    int humiThreshold = inputText.toInt(&ok);  // 这里使用 int，因为湿度一般是整数
 
+    if (!ok) {
+        qDebug() << "输入的湿度阈值无效";
+        return;
+    }
+
+    sendThreshold("humiThreshold", humiThreshold);
 }
+
+
+
+// 处理 PM2.5 阈值的按钮点击事件
+void Widget::on_pushButton_set_PMThresholed_clicked()
+{
+    QString inputText = ui->lineEdit_PMThresholed->text();
+    bool ok;
+    double pmThreshold = inputText.toDouble(&ok);  // PM2.5 通常是浮点数
+
+    if (!ok) {
+        qDebug() << "输入的 PM2.5 阈值无效";
+        return;
+    }
+
+    sendThreshold("PMThreshold", pmThreshold);
+}
+
+// 处理气压阈值的按钮点击事件
+void Widget::on_pushButton_set_pressThresholed_clicked()
+{
+    QString inputText = ui->lineEdit_pressThresholed->text();
+    bool ok;
+    int pressThreshold = inputText.toInt(&ok);
+
+    if (!ok) {
+        qDebug() << "输入的气压阈值无效";
+        return;
+    }
+
+    sendThreshold("pressThreshold", pressThreshold);
+}
+
+// 处理空气质量阈值的按钮点击事件
+void Widget::on_pushButton_set_airQThresholed_clicked()
+{
+    QString inputText = ui->lineEdit_airQThresholed->text();
+    bool ok;
+    int airQThreshold = inputText.toInt(&ok);  // 空气质量通常是整数（AQI）
+
+    if (!ok) {
+        qDebug() << "输入的空气质量阈值无效";
+        return;
+    }
+
+    sendThreshold("airQThreshold", airQThreshold);
+}
+
 
