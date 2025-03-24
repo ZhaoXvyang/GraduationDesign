@@ -8,6 +8,7 @@
 #include "mqtt.h"
 #include "drawdata.h"
 #include "data.h"
+#include <QFile>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -38,6 +39,7 @@ public:
     void updateAirQualityStatus(int airQuality);
     void updateHumidityStatus(int humidity);
     void updateTempStatus(float temp);
+    void checkConnectionStatus();
 private slots:
     void slots_updateLabels(data::Data labelsData);
     void slots_updateThresholdLabels(data::Data labelsData);
@@ -61,5 +63,6 @@ private:
     Ui::Widget *ui;
 
     DrawData* drawData;
+    QTimer* m_timeoutTimer;
 };
 #endif // WIDGET_H

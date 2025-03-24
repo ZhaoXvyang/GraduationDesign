@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <QtMqtt/qmqttclient.h>
+#include <QTimer>
 #include "data.h"
 
 static const QString SERVER_ADDRESS = QStringLiteral("iot-06z00fmnyhez6wa.mqtt.iothub.aliyuncs.com");

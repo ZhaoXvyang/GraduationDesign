@@ -18,11 +18,23 @@ Widget::Widget(QWidget *parent)
     LabelUtils::setLabelAsRealTimeClock(ui->label_time); // 显示当前系统时间
     LabelUtils::setLabelDeviceName(ui->label_osName);
     ui->label_connectedStatus->setStyleSheet("color: red;");
+
+    // 检测连接状态
+    m_timeoutTimer = new QTimer(this);
+    m_timeoutTimer->setInterval(3000); // 3秒检测一次
+    connect(m_timeoutTimer, &QTimer::timeout, this, &Widget::checkConnectionStatus);
+    m_timeoutTimer->start(); // 启动定时器
+
 }
 
 Widget::~Widget()
 {
     delete ui;
+}
+
+void Widget::checkConnectionStatus()
+{
+    setConnectionStatus("单片机断开 ❌");
 }
 
 // 设置连接状态的函数
@@ -42,14 +54,19 @@ void Widget::updateTempStatus(float temp)
     QString tempStatus;
     if (temp < 0) {
         tempStatus = "寒冷 ❄️";
+        ui->label_temp_status->setStyleSheet("color: blue;"); // 设置样式为蓝色
     } else if (temp < 10) {
         tempStatus = "较冷 🌬️";
+        ui->label_temp_status->setStyleSheet("color: lightblue;"); // 设置样式为浅蓝色
     } else if (temp < 25) {
         tempStatus = "舒适 🙂";
+        ui->label_temp_status->setStyleSheet("color: green;"); // 设置样式为绿色
     } else if (temp < 35) {
         tempStatus = "炎热 🔥";
+        ui->label_temp_status->setStyleSheet("color: orange;"); // 设置样式为橙色
     } else {
         tempStatus = "酷热 🥵";
+        ui->label_temp_status->setStyleSheet("color: red;"); // 设置样式为红色
     }
     ui->label_temp_status->setText(tempStatus);
 }
@@ -60,10 +77,13 @@ void Widget::updateHumidityStatus(int humidity)
     QString humidityStatus;
     if (humidity < 30) {
         humidityStatus = "干燥 💨";
+        ui->label_humi_status->setStyleSheet("color: orange;"); // 设置样式为橙色
     } else if (humidity < 60) {
         humidityStatus = "适中 ✅";
+        ui->label_humi_status->setStyleSheet("color: green;"); // 设置样式为绿色
     } else {
         humidityStatus = "潮湿 💦";
+        ui->label_humi_status->setStyleSheet("color: blue;"); // 设置样式为蓝色
     }
     ui->label_humi_status->setText(humidityStatus);
 }
@@ -74,14 +94,19 @@ void Widget::updateAirQualityStatus(int airQuality)
     QString airQualityStatus;
     if (airQuality < 50) {
         airQualityStatus = "优 ✅";
+        ui->label_air_status->setStyleSheet("color: green;"); // 设置样式为绿色
     } else if (airQuality < 100) {
         airQualityStatus = "良 🙂";
+        ui->label_air_status->setStyleSheet("color: lightgreen;"); // 设置样式为浅绿色
     } else if (airQuality < 150) {
         airQualityStatus = "轻度污染 😷";
+        ui->label_air_status->setStyleSheet("color: orange;"); // 设置样式为橙色
     } else if (airQuality < 200) {
         airQualityStatus = "中度污染 😨";
+        ui->label_air_status->setStyleSheet("color: red;"); // 设置样式为红色
     } else {
         airQualityStatus = "重度污染 ☠️";
+        ui->label_air_status->setStyleSheet("color: darkred;"); // 设置样式为深红色
     }
     ui->label_air_status->setText(airQualityStatus);
 }
@@ -92,10 +117,13 @@ void Widget::updatePressureStatus(float pressure)
     QString pressureStatus;
     if (pressure < 980) {
         pressureStatus = "低气压 ⬇️";
+        ui->label_airpress_status->setStyleSheet("color: orange;"); // 设置样式为橙色
     } else if (pressure < 1020) {
         pressureStatus = "正常 🌍";
+        ui->label_airpress_status->setStyleSheet("color: green;"); // 设置样式为绿色
     } else {
         pressureStatus = "高气压 ⬆️";
+        ui->label_airpress_status->setStyleSheet("color: red;"); // 设置样式为红色
     }
     ui->label_airpress_status->setText(pressureStatus);
 }
@@ -106,14 +134,19 @@ void Widget::updatePMStatus(float pm)
     QString PMStatus;
     if (pm < 35) {
         PMStatus = "优 ✅";
+        ui->label_PM_status->setStyleSheet("color: green;"); // 设置样式为绿色
     } else if (pm < 75) {
         PMStatus = "良 🙂";
+        ui->label_PM_status->setStyleSheet("color: lightgreen;"); // 设置样式为浅绿色
     } else if (pm < 115) {
         PMStatus = "轻度污染 😷";
+        ui->label_PM_status->setStyleSheet("color: orange;"); // 设置样式为橙色
     } else if (pm < 150) {
         PMStatus = "中度污染 😨";
+        ui->label_PM_status->setStyleSheet("color: red;"); // 设置样式为红色
     } else {
         PMStatus = "重度污染 ☠️";
+        ui->label_PM_status->setStyleSheet("color: darkred;"); // 设置样式为深红色
     }
     ui->label_PM_status->setText(PMStatus);
 }
@@ -131,6 +164,9 @@ void Widget::updateAllStatuses(const data::Data &labelsData)
 // 主更新函数
 void Widget::slots_updateLabels(data::Data labelsData)
 {
+    setConnectionStatus("已连接"); // 更新连接状态
+    m_timeoutTimer->start(); // 复位定时器，防止误判掉线
+
     ui->label_DEVNAME->setText(QString("远端设备:%1").arg(labelsData.deviceName()));
 
     // 更新数据数值
@@ -143,7 +179,6 @@ void Widget::slots_updateLabels(data::Data labelsData)
     // 更新状态文本
     updateAllStatuses(labelsData);
 }
-
 
 void Widget::slots_updateThresholdLabels(data::Data labelsData)
 {
@@ -291,7 +326,7 @@ void Widget::on_pushButton_set_PMThresholed_clicked()
         return;
     }
 
-    sendThreshold("PMThreshold", pmThreshold);
+    sendThreshold("pm25Threshold", pmThreshold);
 }
 
 // 处理气压阈值的按钮点击事件

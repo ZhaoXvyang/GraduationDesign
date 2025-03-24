@@ -45,6 +45,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         mqtt.h mqtt.cpp
         data.h data.cpp
         MyTools.h
+        style.qrc
 
 
     )

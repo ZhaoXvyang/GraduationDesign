@@ -19,6 +19,7 @@ MQTTClient::MQTTClient(QObject *parent)
         qDebug()<<"连接断开";
         m_is_connected.store(false);
     });
+
 }
 
 void MQTTClient::connectHost()
