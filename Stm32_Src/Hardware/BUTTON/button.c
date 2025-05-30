@@ -70,6 +70,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         if (HAL_GPIO_ReadPin(KEY3_GPIO_Port, KEY3_Pin) == GPIO_PIN_RESET && currentPage == 1) { // 确保在 Page 2
             lastPressTime_KEY3 = currentTime;
             adjustThreshold(selectedThresholdIndex, 1); // 增加当前选中阈值
+        }else{
+            beep_enabled  = !beep_enabled; // 切换蜂鸣器状态（0 -> 1, 1 -> 0）
         }
     }
 }

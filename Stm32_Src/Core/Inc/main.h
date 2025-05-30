@@ -62,7 +62,7 @@ extern uint16_t airQThreshold;
 extern int pressThreshold;
 extern float pm25Threshold;
 extern uint8_t ThresholdsChanged;
-extern volatile uint8_t newDataFlag;  // 标志位，指示新数据可供处理
+extern volatile uint8_t newDataFlag;  // 标志位，指示新数据可供处理 
 // 发送阈值
 
 // ESP8266接收缓冲区

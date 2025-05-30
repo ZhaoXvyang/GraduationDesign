@@ -46,7 +46,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         data.h data.cpp
         MyTools.h
         style.qrc
-
+        app.rc # app图标
 
     )
 # 如果使用 Qt5 或其他版本，则使用传统的 add_executable
@@ -56,6 +56,7 @@ else()
             ${PROJECT_SOURCES}  # 为 Android 构建共享库
         )
     else()
+        set(WINDOWS_RESOURCES app.rc)
         add_executable(GraduationDesign
             ${PROJECT_SOURCES}  # 创建普通的可执行文件
         )

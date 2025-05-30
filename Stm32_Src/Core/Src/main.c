@@ -77,6 +77,7 @@ float pm25Threshold = 75.0;
 //BMP180Data_T g_tBMP180 = {0};
 uint8_t ThresholdsChanged = 1; // 阈值是否被改变
 uint8_t not_init = 1; // 是否初始化完成，初始化完成才显示数据页面
+uint8_t BEEP_STATUS = 0;// 0关闭蜂鸣器 1打开
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -637,6 +638,17 @@ void Display_Thresholds(void) {
     }
 }
 
+void Display_BeepStatus(void) {
+    OLED_ShowString(2, 0, "Page Three", OLED_6X8);
+    OLED_ShowString(2, 10, "More data here", OLED_6X8);
+
+    // 显示蜂鸣器状态
+    if (beep_enabled) {
+        OLED_ShowString(2, 20, "BEEP: ON", OLED_6X8);
+    } else {
+        OLED_ShowString(2, 20, "BEEP: OFF", OLED_6X8);
+    }
+}
 
 void showData(void) {
     if (not_init == 1) return;
@@ -652,8 +664,7 @@ void showData(void) {
             break;
 
         case PAGE_THREE:  // 第三页
-            OLED_ShowString(2, 0, "Page Three", OLED_6X8);
-            OLED_ShowString(2, 10, "More data here", OLED_6X8);
+            Display_BeepStatus();
             break;
     }
 

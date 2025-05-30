@@ -2,13 +2,14 @@
 #include "main.h"
 #include "BMP180.h"
 
-// 定义全局变量
+// 全局变量
 uint32_t beepStartTime = 0;
 uint8_t beepState = 0;  // 0: 停止, 1: 蜂鸣器发声, 2: 停止蜂鸣器
-_Bool warring = 0;
+uint8_t beep_enabled = 1;  // 1: 启用蜂鸣器, 0: 关闭蜂鸣器（不管报警与否）
+_Bool warring = 0;  // 报警状态
 
 void CheckThreshold(void) {
-    // 检查各项数据是否超过设定的阈值
+    // 检查数据是否超过设定阈值
     if (temperature > tempThreshold || 
         humidity > humiThreshold || 
         airQuality > airQThreshold || 
@@ -20,23 +21,30 @@ void CheckThreshold(void) {
     }
 }
 
-
 void BEEP_1S(void) {
+    // 如果手动关闭蜂鸣器，直接关闭蜂鸣器并返回
+    if (!beep_enabled) {
+        HAL_GPIO_WritePin(BEEP_GPIO_Port, BEEP_Pin, GPIO_PIN_RESET); 
+        HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+        return;
+    }
+
+    // 如果没有警报且 `beep_enabled` 为 1，则关闭蜂鸣器
     if (!warring) {
         HAL_GPIO_WritePin(BEEP_GPIO_Port, BEEP_Pin, GPIO_PIN_RESET); 
         HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
         return;
     }
 
-    uint32_t currentTime = HAL_GetTick();  // 获取当前系统时间
+    uint32_t currentTime = HAL_GetTick();  // 获取当前时间
 
     switch (beepState) {
         case 0:  // 停止蜂鸣器
             if (currentTime - beepStartTime >= 300) {  // 0.3秒
-                HAL_GPIO_WritePin(BEEP_GPIO_Port, BEEP_Pin, GPIO_PIN_SET);  // 开始发声
-                HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);  // LED 熄灭
+                HAL_GPIO_WritePin(BEEP_GPIO_Port, BEEP_Pin, GPIO_PIN_SET);  // 蜂鸣器发声
+                HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);  // LED 亮起
 
-                beepStartTime = currentTime;  // 记录发声开始时间
+                beepStartTime = currentTime;
                 beepState = 1;
             }
             break;
@@ -44,16 +52,16 @@ void BEEP_1S(void) {
         case 1:  // 蜂鸣器发声
             if (currentTime - beepStartTime >= 200) {  // 0.2秒
                 HAL_GPIO_WritePin(BEEP_GPIO_Port, BEEP_Pin, GPIO_PIN_RESET);  // 停止发声
-                HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);  // LED 亮起
+                HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);  // LED 熄灭
 
-                beepStartTime = currentTime;  // 记录停止发声时间
+                beepStartTime = currentTime;
                 beepState = 2;
             }
             break;
 
         case 2:  // 停止蜂鸣器
             if (currentTime - beepStartTime >= 100) {  // 0.1秒
-                beepState = 0;  // 重新进入停止状态，准备下一轮操作
+                beepState = 0;  // 重新进入停止状态
             }
             break;
     }

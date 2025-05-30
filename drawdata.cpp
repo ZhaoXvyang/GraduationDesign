@@ -9,7 +9,7 @@
 
 DrawData::DrawData(QWidget *parentWidget)
     : QObject(parentWidget->parent()), m_parentWidget(parentWidget), m_running(false),
-    m_lastTemp(25.0), m_lastHumidity(60.0) // 初始化默认值
+    m_lastTemp(1.0), m_lastHumidity(1.0) // 初始化默认值
 {
     initChart();
 }
@@ -61,7 +61,7 @@ void DrawData::initChart()
 
     m_axisY2 = new QValueAxis();
     m_axisY2->setTitleText("湿度 (%)");
-    m_axisY2->setRange(5, 65);
+    m_axisY2->setRange(0, 90);
 
     m_chart->addAxis(m_axisX, Qt::AlignBottom);
     m_chart->addAxis(m_axisY1, Qt::AlignLeft);
